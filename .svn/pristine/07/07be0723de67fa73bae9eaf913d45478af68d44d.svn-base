@@ -1,0 +1,36 @@
+#database
+db.driverClassName=com.mysql.jdbc.Driver
+db.url=jdbc:mysql://10.153.151.6:8066/south_network?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true
+db.username=cmcc
+db.password=VePK9pAm
+
+#passport
+uri=http://10.153.91.4:8080/Passport/webservice/userservice
+deployid=362
+isQueryDateTime=1
+passPort=10.153.91.4:8080/Passport/logintoken.do
+
+#dpi clog opcode
+opCode.re = 20047
+
+#impala configuration
+connection.url = jdbc:impala://10.102.9.7:21050
+jdbc.driver.class.name = com.cloudera.impala.jdbc41.Driver
+
+#callbill Catalog
+callbillCatalog = cmcc
+
+#upload maxFileSize(B)
+upload.maxFileSize = 104857600
+
+#jexl
+AREA_KPI_EXL = leftScore + (x - leftValue) / (rightValue - leftValue) * (rightScore - leftScore)
+CARRIER_KPI_EXL = leftScore+(x-leftValue)/(rightValue-leftValue)*(rightScore-leftScore)
+ROOM_KPI_EXL = leftScore+(x-leftValue)/(rightValue-leftValue)*(rightScore-leftScore)
+PRODUCT_KPI_EXL = leftScore+(x-leftValue)/(rightValue-leftValue)*(rightScore-leftScore)
+IP_KPI_EXL = leftScore+(x-leftValue)/(rightValue-leftValue)*(rightScore-leftScore)
+AREA_KPI_TOTAL_SCORE_EXL = (successPercent * successPercentWeight + respDelay * respDelayWeight + serverDelay * serverDelayWeight + clientDelay * clientDelayWeight + timeoutPercent * timeoutPercentWeight + upRetransPercent * upRetransPercentWeight + downRetransPercent * downRetransPercentWeight)/100
+CARRIER_KPI_TOTAL_SCORE_EXL = (successPercent * successPercentWeight + respDelay * respDelayWeight + serverDelay * serverDelayWeight + clientDelay * clientDelayWeight + timeoutPercent * timeoutPercentWeight + upRetransPercent * upRetransPercentWeight + downRetransPercent * downRetransPercentWeight)/100
+ROOM_KPI_TOTAL_SCORE_EXL = (successPercent * successPercentWeight + respDelay * respDelayWeight + serverDelay * serverDelayWeight + clientDelay * clientDelayWeight + timeoutPercent * timeoutPercentWeight + upRetransPercent * upRetransPercentWeight + downRetransPercent * downRetransPercentWeight)/100
+PRODUCT_KPI_TOTAL_SCORE_EXL = (successPercent * successPercentWeight + respDelay * respDelayWeight + serverDelay * serverDelayWeight + clientDelay * clientDelayWeight + timeoutPercent * timeoutPercentWeight + upRetransPercent * upRetransPercentWeight + downRetransPercent * downRetransPercentWeight)/100
+IP_KPI_TOTAL_SCORE_EXL = (successPercent * successPercentWeight + respDelay * respDelayWeight + serverDelay * serverDelayWeight + clientDelay * clientDelayWeight + timeoutPercent * timeoutPercentWeight + upRetransPercent * upRetransPercentWeight + downRetransPercent * downRetransPercentWeight)/100

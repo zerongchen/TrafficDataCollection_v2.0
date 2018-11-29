@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aotain.tdc.dao.serviceConfiguration.RoomTrafficManageDao" >
+
+	<resultMap type="com.aotain.tdc.dto.common.DicRoomTrafficInfo" id="roomInfoMap">
+		<result column="SERVERROOM_ID" property="serverroomid" jdbcType="BIGINT" />
+		<result column="SERVERROOM_NAME" property="serverroomname" jdbcType="VARCHAR" />
+		<result column="SERVERBUILD_ID" property="serverbuildid" jdbcType="BIGINT" />
+		<result column="SERVERBUILD_NAME" property="serverbuildname" jdbcType="VARCHAR" />
+	</resultMap>
+	<resultMap type="com.aotain.tdc.dto.common.DicRoomTrafficConfig" id="roomConfigMap">
+		<result column="IP_ID" property="id" jdbcType="BIGINT" />
+		<result column="SERVERROOM_ID" property="serverroomid" jdbcType="BIGINT" />		
+		<result column="START_IP" property="startip" jdbcType="VARCHAR" />
+		<result column="END_IP" property="endip" jdbcType="VARCHAR" />		
+	</resultMap>
+	
+	
+	
+	<update id="updateRoomTrafficParent">
+		UPDATE DIC_SERVERROOM
+		SET
+		SERVERBUILD_ID = #{queryServerBuildId}
+		WHERE SERVERROOM_ID = #{queryServerRoomId}
+	</update>
+	
+	<select id="IsexitbuildInfo" resultType="int">
+		select count(1) from dic_Serverbuild where 
+		SERVERBUILD_NAME = #{serverbuildname}
+	</select>
+	
+	<insert id="insertRoomInfo">
+		<selectKey keyProperty="serverbuildid" resultType="java.lang.Integer" order="BEFORE">
+	    	SELECT mycat_roomseq_nextval('dic_serverbuild')
+	  	</selectKey>	
+	  		insert into dic_Serverbuild (
+		  	 SERVERBUILD_ID,
+			 SERVERBUILD_NAME
+	  	    ) values (
+	  		 #{serverbuildid},
+	  		 #{serverbuildname}
+	  	   )
+	</insert>
+	
+	<select id="IsexitRoomInfo" resultType="int">
+		select count(1) from dic_serverroom where 
+		SERVERROOM_NAME = #{serverbuildname}
+	</select>
+	
+	<insert id="insertRoomTrafficInfo">
+		<selectKey keyProperty="serverroomid" resultType="java.lang.Integer" order="BEFORE">
+	    	SELECT mycat_roomseq_nextval('dic_serverroom')
+	  	</selectKey>	  	
+	  	insert into dic_serverroom (
+			SERVERROOM_ID,
+			SERVERBUILD_ID,
+			SERVERROOM_NAME,
+			LASTUPDATE_TIME
+	  	) values (
+	  		#{serverroomid},
+	  		#{serverbuildid},
+	  		#{serverroomname},	  		
+	  		now()
+	  	)
+	</insert>
+	
+	<select id="IsexitRoomConfig" resultType="int">	
+		select count(1) from dic_serverroom_ip
+		where START_IP = #{startip}
+		and END_IP = #{endip}
+	</select>
+	
+	<insert id="insertRoomTrafficconfig">
+		<selectKey keyProperty="id" resultType="java.lang.Integer" order="BEFORE">
+	    	SELECT mycat_roomseq_nextval('dic_serverroom_ip')
+	  	</selectKey>	  	
+	  	insert into dic_serverroom_ip (
+	  		IP_ID,
+			SERVERROOM_ID,
+			START_IP,
+			END_IP,
+			SERVERBUILD_ID
+	  	) values (
+	  		#{id},
+	  		#{serverroomid},
+	  		#{startip},
+	  		#{endip},
+	  		#{serverbuildid}
+	  	)
+	</insert>
+	
+	<delete id="delSubConfig">
+		delete from dic_serverroom_ip where SERVERROOM_ID in ( select SERVERROOM_ID from dic_serverroom where SERVERBUILD_ID = #{serverbuildid} )
+	</delete>
+	<delete id="delSubroom">
+		delete from dic_serverroom where SERVERBUILD_ID = #{serverbuildid}
+	</delete>
+	<delete id="delConfig">
+		delete from dic_serverroom_ip where SERVERROOM_ID = #{serverroomid}
+	</delete>
+	<delete id="delroom">
+		delete from  dic_serverroom where SERVERROOM_ID = #{serverroomid}
+	</delete>
+	<delete id="delConfigById">
+		delete from dic_serverroom_ip where IP_ID = #{id}
+	</delete>	
+	<delete id="delbuild">
+		delete from  dic_Serverbuild where SERVERBUILD_ID = #{serverbuildid}
+	</delete>
+	
+	<select id="getRoomTrafficInfo" resultMap="roomInfoMap">
+		select SERVERROOM_ID,SERVERBUILD_ID,SERVERROOM_NAME,LASTUPDATE_TIME 
+		from DIC_SERVERROOM where SERVERROOM_ID = #{serverroomid} limit 1
+	</select>
+	
+	
+	
+	<select id="getRoomTrafficConfigs" resultMap="roomConfigMap">
+		select * from dic_serverroom_ip where SERVERROOM_ID = #{serverroomid}
+	</select>
+	<update id="updateRoomTrafficInfo">
+		update DIC_SERVERROOM set SERVERROOM_NAME = #{serverroomname},SERVERBUILD_ID= #{serverbuildid}
+		where SERVERROOM_ID = #{serverroomid}
+	</update>
+	<update id="updateRoomTrafficConfig">
+		update dic_serverroom_ip
+			set SERVERROOM_ID = #{serverroomid},SERVERBUILD_ID= #{serverbuildid}
+		        START_IP = #{startip},
+		        END_IP = #{endip}
+		    where IP_ID = #{id}
+	</update>
+</mapper>

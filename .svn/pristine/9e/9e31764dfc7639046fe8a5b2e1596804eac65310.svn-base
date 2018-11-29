@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aotain.tdc.dao.businessAnalysis.BusinessTrendDao" >
+<select id="getTableColumns" resultType ="java.util.HashMap">
+		SELECT
+		t1.R_STATTIME, SUM(t1.FLOW_UP)+SUM(t1.FLOW_DN) AS FLOW, SUM(t1.VISIT_COUNT) AS PAGE_VIEW, ROUND(SUM(t1.SESSIONTIME)/1000/60/60,2) AS SESSIONTIME,
+		round(IFNULL(sum(t1.SUCCESSCONNECT_COUNT), 0) *100 / IF(sum(t1.CONNECT_COUNT)=0 || IF(sum(t1.CONNECT_COUNT) is null, true, false), 1, sum(t1.CONNECT_COUNT)), 2) AS SUCCESSCONNECT_RATE
+		FROM ${queryTableName} t1
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND t1.R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryProvinceId > 0">
+				AND PROVINCE_ID = #{queryProvinceId}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">  
+				AND BIZ_ID in (${queryBizIdStr})
+			</if>
+		</trim>
+		GROUP BY t1.R_STATTIME
+		<if test=" order != null and order != '' and sort != null and sort != '' ">  
+			order by ${sort} ${order}
+		</if>
+</select>
+
+<select id="getTableColumnsTotalCounts" resultType="java.lang.Integer">
+	SELECT COUNT(1) FROM
+	(SELECT R_STATTIME FROM ${queryTableName}
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryProvinceId > 0">
+				AND PROVINCE_ID = #{queryProvinceId}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">  
+				AND BIZ_ID in (${queryBizIdStr})
+			</if>
+		</trim>
+		GROUP BY R_STATTIME) t1
+</select>
+</mapper>

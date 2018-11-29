@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace = "com.aotain.tdc.dao.strategy.TrafficCollectionManagementDao">
+<select id="getTableColumnsData" resultType = "java.util.HashMap">
+	SELECT t1.STRATEGY_ID, DATE_FORMAT(t1.CREATETIME,'%Y-%m-%d %H:%i:%s') as CREATETIME, t1.CREATE_USER, t1.CREATET_YPE, t1.STRATEGY_NAME,
+		   t1.CATALOGID, t1.CLASSID, t1.PRODUCTID, t1.MODULEID, t1.SRC_IP, t1.SRC_PORT, t1.PROTOCOLTYPE_ID, t1.DOMAIN, t1.URL,
+		   CASE t1.STATUS
+			 WHEN 0 THEN '未启用'
+			 WHEN 1 THEN '正常运行'
+			 WHEN 2 THEN '传输终止'
+			 WHEN 3 THEN '已停用'
+		   END
+		   AS STATUS
+	FROM POLICY_FLOW_GATHER_STRATEGY t1
+	 <trim prefix="WHERE" prefixOverrides="AND |OR ">
+		<if test=" queryStartTime != null and queryStartTime !='' ">
+			AND CREATETIME &gt; #{queryStartTime}
+		</if>
+		<if test=" queryEndTime != null and queryEndTime !='' ">
+			AND CREATETIME &lt;= #{queryEndTime}
+		</if>
+		<if test="queryStrategyId > 0 ">
+			AND t1.STRATEGY_ID = #{queryStrategyId}
+		</if>
+		<if test="queryCatalogId > 0 ">
+			AND CATALOGID = #{queryCatalogId}
+		</if>
+		<if test="queryClassId > 0 ">
+			AND CLASSID = #{queryClassId}
+		</if>
+		<if test="queryProductId > 0 ">
+			AND PRODUCTID = #{queryProductId}
+		</if>
+		<if test="queryModuleId > 0 ">
+			AND MODULEID = #{queryModuleId}
+		</if>
+		<if test="querySrcIp != null and querySrcIp !='' ">
+			AND SRC_IP LIKE CONCAT('%',#{querySrcIp},'%')
+		</if>
+		<if test="querySrcPort != null and querySrcPort !=''">
+			AND SRC_PORT LIKE CONCAT('%',#{querySrcPort},'%')
+		</if>
+		<if test="queryDestIp != null and queryDestIp !='' ">
+			AND t1.STRATEGY_ID in (SELECT STRATEGY_ID FROM POLICY_DST_IPPORT WHERE DST_IP LIKE CONCAT('%',#{queryDestIp},'%'))
+		</if>
+		<if test="queryDestPort != null and queryDestPort !=''">
+			AND t1.STRATEGY_ID in (SELECT STRATEGY_ID FROM POLICY_DST_IPPORT WHERE DST_PORT like CONCAT('%',#{queryDestPort},'%'))
+		</if>
+		<if test="queryProtocol > 0 ">
+			AND PROTOCOLTYPE_ID = #{queryProtocol}
+		</if>
+		<if test="queryDomain != null and queryDomain !=''">
+			AND DOMAIN LIKE CONCAT('%',#{queryDomain},'%')
+		</if>
+		<if test="queryUrl != null and queryUrl !=''">
+			AND URL LIKE CONCAT('%',#{queryUrl},'%')
+		</if>
+		<if test="queryFTPServerId > 0 ">
+			AND t1.STRATEGY_ID in (SELECT STRATEGY_ID FROM
+				POLICY_STRATEGY_FTP a
+			LEFT JOIN POLICY_FTP_SERVER b
+			ON   a.FTP_ID=b.FTP_ID 
+			WHERE
+				b.FTP_ID=#{queryFTPServerId})
+		</if>
+		<if test="queryStatus >= 0 ">
+			AND STATUS = #{queryStatus}
+		</if>
+	</trim>
+	<if test=" order != null and order != '' and sort != null and sort != '' ">
+		ORDER BY ${sort} ${order}
+		</if>
+		<if test="isPaging == 1">
+		LIMIT #{startRow}, #{endRow}
+		</if>
+</select>
+
+<select id="getTableColumnsDataTotalCounts" resultType = "java.lang.Integer">
+	SELECT count(1)
+	FROM POLICY_FLOW_GATHER_STRATEGY t1
+	<trim prefix="WHERE" prefixOverrides="AND |OR ">
+		<if test=" queryStartTime != null and queryStartTime !='' ">
+			AND CREATETIME &gt; #{queryStartTime}
+		</if>
+		<if test=" queryEndTime != null and queryEndTime !='' ">
+			AND CREATETIME &lt;= #{queryEndTime}
+		</if>
+		<if test="queryStrategyId > 0 ">
+			AND t1.STRATEGY_ID = #{queryStrategyId}
+		</if>
+		<if test="queryCatalogId > 0 ">
+			AND CATALOGID = #{queryCatalogId}
+		</if>
+		<if test="queryClassId > 0 ">
+			AND CLASSID = #{queryClassId}
+		</if>
+		<if test="queryProductId > 0 ">
+			AND PRODUCTID = #{queryProductId}
+		</if>
+		<if test="queryModuleId > 0 ">
+			AND MODULEID = #{queryModuleId}
+		</if>
+		<if test="querySrcIp != null and querySrcIp !='' ">
+			AND SRC_IP LIKE CONCAT('%',#{querySrcIp},'%')
+		</if>
+		<if test="querySrcPort != null and querySrcPort !=''">
+			AND SRC_PORT LIKE CONCAT('%',#{querySrcPort},'%')
+		</if>
+		<if test="queryDestIp != null and queryDestIp !='' ">
+			AND t1.STRATEGY_ID in (select STRATEGY_ID from POLICY_DST_IPPORT where DST_IP=#{queryDestIp})
+		</if>
+		<if test="queryDestPort != null and queryDestPort !=''">
+			AND t1.STRATEGY_ID in (select STRATEGY_ID from POLICY_DST_IPPORT where CONCAT(',', DST_PORT, ',') like CONCAT('%,', #{queryDestPort}, ',%') )
+		</if>
+		<if test="queryProtocol > 0 ">
+			AND PROTOCOLTYPE_ID = #{queryProtocol}
+		</if>
+		<if test="queryDomain != null and queryDomain !=''">
+			AND DOMAIN LIKE CONCAT('%',#{queryDomain},'%')
+		</if>
+		<if test="queryUrl != null and queryUrl !=''">
+			AND URL LIKE CONCAT('%',#{queryUrl},'%')
+		</if>
+		<if test="queryFTPServerId > 0 ">
+			AND t1.STRATEGY_ID in (SELECT STRATEGY_ID FROM
+				POLICY_STRATEGY_FTP a
+			LEFT JOIN POLICY_FTP_SERVER b
+			ON   a.FTP_ID=b.FTP_ID 
+			WHERE
+				b.FTP_ID=#{queryFTPServerId})
+		</if>
+		<if test="queryStatus >= 0 ">
+			AND STATUS = #{queryStatus}
+		</if>
+	</trim>
+</select>
+<insert id="insert">
+		<selectKey keyProperty="queryStrategyId" resultType="java.lang.String" order="BEFORE">
+	    	SELECT MYCAT_SEQ_NEXTVAL('STRATEGY_ID')
+	  	</selectKey>
+	INSERT INTO POLICY_FLOW_GATHER_STRATEGY
+	(
+	STRATEGY_ID,
+	MESSAGE_SEQUENCENO,
+	STRATEGY_NAME,
+	CATALOGID,
+	CLASSID,
+	PRODUCTID,
+	MODULEID,
+	STATUS,
+	SRC_IP,
+	SRC_PORT,
+	CREATETIME,
+	CREATE_USER,
+	CREATET_YPE,
+	PROTOCOLTYPE_ID,
+	DOMAIN,
+	URL,
+	DEAL_TYPE
+	)
+	VALUES
+	(
+	${queryStrategyId},
+	1,
+	#{queryStrategyName},
+	IFNULL(#{queryCatalogId}, 0),
+	IFNULL(#{queryClassId}, 0),
+	IFNULL(#{queryProductId}, 0),
+	IFNULL(#{queryModuleId}, 0),
+	IFNULL(#{queryStatus}, 0),
+	IFNULL(#{querySrcIp}, ''),
+	IFNULL(#{querySrcPort}, ''),
+	SYSDATE(),
+	IFNULL(#{queryCreateUser}, ''),
+	1,
+	IFNULL(#{queryProtocol}, 0),
+	IFNULL(#{queryDomain},''),
+	IFNULL(#{queryUrl}, ''),
+	#{queryDealType}
+	)
+</insert>
+<insert id="insertFtp">
+	INSERT INTO POLICY_STRATEGY_FTP
+	(
+	STRATEGY_TYPE,
+	STRATEGY_ID,
+	FTP_ID
+	)
+	VALUES
+	(
+	1,
+	#{queryStrategyId},
+	#{queryFTPServerId}
+	)
+</insert>
+<insert id="insertDestIp">
+	INSERT INTO POLICY_DST_IPPORT
+	(
+	STRATEGY_TYPE,
+	STRATEGY_ID,
+	DST_IP,
+	DST_PORT
+	)
+	VALUES
+	(
+	1,
+	#{queryStrategyId},
+	#{queryDestIp},
+	#{queryDestPort}
+	)
+</insert>
+
+<delete id="delete">
+	DELETE FROM POLICY_FLOW_GATHER_STRATEGY
+	WHERE STRATEGY_ID in (${queryStrategyIds})
+</delete>
+<delete id="deleteFtp">
+	DELETE FROM POLICY_STRATEGY_FTP
+	WHERE STRATEGY_ID in (${queryStrategyId}) and STRATEGY_TYPE=1
+</delete>
+<delete id="deleteDestIp">
+	DELETE FROM POLICY_DST_IPPORT
+	WHERE STRATEGY_ID in (${queryStrategyId}) and STRATEGY_TYPE=1
+</delete>
+
+<update id="update">
+	UPDATE POLICY_FLOW_GATHER_STRATEGY
+	<trim prefix="SET" suffixOverrides=",">
+			MESSAGE_SEQUENCENO = MESSAGE_SEQUENCENO + 1,
+		<if test="queryStrategyName != null and queryStrategyName != ''">
+			STRATEGY_NAME = #{queryStrategyName},
+		</if>
+			CATALOGID = IFNULL(#{queryCatalogId},0),
+			CLASSID = IFNULL(#{queryClassId},0),
+			PRODUCTID = IFNULL(#{queryProductId},0),
+			MODULEID = IFNULL(#{queryModuleId},0),
+			STATUS = IFNULL(#{queryStatus},0),
+		<if test="querySrcIp != null and querySrcIp != ''">
+			SRC_IP = #{querySrcIp},
+		</if>
+		<if test="querySrcPort != null and querySrcPort != ''">
+			SRC_PORT = #{querySrcPort},
+		</if>
+			PROTOCOLTYPE_ID = IFNULL(#{queryProtocol}, 0),
+		<if test="queryDomain != null and queryDomain != ''">
+			DOMAIN = #{queryDomain},
+		</if>
+		<if test="queryUrl != null and queryUrl != ''">
+			URL = #{queryUrl},
+		</if>
+			DEAL_TYPE = IFNULL(#{queryDealType}, 0)
+	</trim>
+		WHERE STRATEGY_ID = #{queryStrategyId}
+</update>
+<!-- <update id="updateFtp">
+	UPDATE POLICY_STRATEGY_FTP
+	SET
+		FTP_ID = #{queryFTPServerId}
+		WHERE STRATEGY_ID = #{queryStrategyId}
+</update>
+<update id="updateDestIp">
+	UPDATE POLICY_DST_IPPORT
+		SET
+			DST_IP = #{queryDestIp},
+			DST_PORT = #{queryDestPort}
+		WHERE STRATEGY_ID = #{queryStrategyId} 
+</update> -->
+<update id="updateStatus">
+	UPDATE POLICY_FLOW_GATHER_STRATEGY
+	SET
+		STATUS = #{queryStatus}
+		WHERE STRATEGY_ID = #{queryStrategyId}
+</update>
+</mapper>

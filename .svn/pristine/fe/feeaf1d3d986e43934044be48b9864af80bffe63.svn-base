@@ -1,0 +1,340 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ include file="/WEB-INF/common/taglibs.jsp"%>
+
+<c:set var="insertCatalogUrl" value="${ctx}/serviceConfiguration/serviceArchitecture/insertCatalog.do" scope="request" />
+<c:set var="insertClassUrl" value="${ctx}/serviceConfiguration/serviceArchitecture/insertClass.do" scope="request" />
+<c:set var="insertProductUrl" value="${ctx}/serviceConfiguration/serviceArchitecture/insertProduct.do" scope="request" />
+<c:set var="insertModuleUrl" value="${ctx}/serviceConfiguration/serviceArchitecture/insertModule.do" scope="request" />
+
+<c:set var="updateCatalogUrl" value="${ctx}/serviceConfiguration/serviceArchitecture/updateCatalog.do" scope="request" />
+<c:set var="updateClassUrl" value="${ctx}/serviceConfiguration/serviceArchitecture/updateClass.do" scope="request" />
+<c:set var="updateProductUrl" value="${ctx}/serviceConfiguration/serviceArchitecture/updateProduct.do" scope="request" />
+<c:set var="updateModuleUrl" value="${ctx}/serviceConfiguration/serviceArchitecture/updateModule.do" scope="request" />
+
+<c:set var="deleteCatalogUrl" value="${ctx}/serviceConfiguration/serviceArchitecture/deleteCatalog.do" scope="request" />
+<c:set var="deleteClassUrl" value="${ctx}/serviceConfiguration/serviceArchitecture/deleteClass.do" scope="request" />
+<c:set var="deleteProductUrl" value="${ctx}/serviceConfiguration/serviceArchitecture/deleteProduct.do" scope="request" />
+<c:set var="deleteModuleUrl" value="${ctx}/serviceConfiguration/serviceArchitecture/deleteModule.do" scope="request" />
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>中移动流量采集监测系统-业务配置-业务架构管理</title>
+<jsp:include page="/WEB-INF/common/meta.jsp" flush="true"></jsp:include>
+<tdc:res form="true" table="true"></tdc:res>
+<link rel="stylesheet" type="text/css" href="${cssPath}/style-main.css" />
+<link rel="stylesheet" type="text/css" href="${cssPath}/style-subclass.css" />
+<link rel="stylesheet" type="text/css" href="${cssPath}/popup.css" />
+<link rel="stylesheet" href="${cssPath}/style-ui.min.css">
+<style type="text/css">
+.ztree li span.button.add {margin-left:2px; margin-right: -1px; background-position:-144px 0; vertical-align:top; *vertical-align:middle}
+</style>
+<script type="text/javascript">
+var initUpTableUrl = '${initUpTable}';
+var setting = {
+	view: {
+		addHoverDom: addHoverDom,
+		removeHoverDom: removeHoverDom,
+		selectedMulti: true
+	},
+	edit: {
+	  enable: true,
+	//	editNameSelectAll: true,
+		removeTitle:"删除",
+	//	renameTitle:"修改",
+		showRemoveBtn: showRemoveBtn,
+		showRenameBtn: false
+	},
+	data: {
+		simpleData: {
+			enable: true
+		}
+	},
+	callback: {
+		//beforeDrag: beforeDrag,
+		//beforeEditName: beforeEditName
+		beforeRemove: beforeRemove
+		//beforeRename: beforeRename,
+		//onClick: zTreeOnClick,
+		//onRemove: onRemove,
+		//onRename: onRename
+	}
+};
+$(function() {	
+	var zNodes1  =  statisticsObject.getAllNodes();
+	//console.log(zNodes1);
+	$.fn.zTree.init($("#treeSelect"), setting, eval(zNodes1));	
+	
+	$("#btnOper").on("click", function(e){
+		if($("#hid_operType").val() == "0"){ 
+			if(validator($("#hid_operTable").val())){
+				switch ($("#hid_operTable").val()){
+					case "catalog": statisticsObject.insert('${insertCatalogUrl}');break;
+					case "class": statisticsObject.insert('${insertClassUrl}');break;
+					case "product": statisticsObject.insert('${insertProductUrl}');break;
+					case "module": statisticsObject.insert('${insertModuleUrl}');break;
+			 	}
+			}
+		}else if($("#hid_operType").val() == "1"){
+			if(validator($("#hid_operTable").val())){
+				switch ($("#hid_operTable").val()){
+			     case "catalog": statisticsObject.update('${updateCatalogUrl}');break;
+				 case "class": statisticsObject.update('${updateClassUrl}');break;
+				 case "product": statisticsObject.update('${updateProductUrl}');break;
+				 case "module": statisticsObject.update('${updateModuleUrl}');break;
+			 	}
+			}
+		}
+	});	
+	$("#btnCancel").on("click", function(e) {
+		//statisticsObject.validator.resetForm();
+		layer.closeAll();
+		window.location.reload();
+	});
+	$(".close").on("click", function(e) {
+		//statisticsObject.validator.resetForm();
+		layer.closeAll();
+		window.location.reload();
+	});
+	
+	$("#searchBtn").on("click",function(){
+		var treeObj = $.fn.zTree.getZTreeObj("treeSelect");
+		var nodes = treeObj.transformToArray(treeObj.getNodes());
+		var searchNum = 0;
+		for(var  i = 0; i< nodes.length;i++){
+			if(nodes[i].name == $("#text_name").val()){
+				treeObj.selectNode(nodes[i]);
+				searchNum += 1;
+			}
+		}
+		if(searchNum == 0){
+			layer.msg("查询不到数据");
+		}
+	})	
+});
+
+function validator(tableName){
+	var isOper = true;
+	if(tableName == "product"){
+		if($("#serverBuild").val() == -1){
+			layer.msg("请选择所属机楼");
+			isOper = false;
+		}
+		if($("#serverRoom").val() == -1){
+			layer.msg("请选择所属机房");
+			isOper = false;
+		}
+	}
+	if($.trim($("#text_queryName").val()).length == 0){
+		layer.msg("请填写名称");
+		isOper = false;
+	}else if($.trim($("#text_queryName").val()).length > 50){
+		layer.msg("名称长度不能超过50");
+		isOper = false;
+	}
+	return isOper;
+}
+
+function addHoverDom(treeId, treeNode) {
+	if(treeNode.level <= 3){    
+		var sObj = $("#" + treeNode.tId + "_span");
+		if (treeNode.editNameFlag || $("#addBtn_"+treeNode.tId).length>0|| $("#editBtn_"+treeNode.tId).length>0) return;
+		if(treeNode.level < 3){
+			var addStr = "<span class='button add' id='addBtn_" + treeNode.tId + "' title='新增' onfocus='this.blur();'></span>";
+			sObj.after(addStr);
+			var addBtn = $("#addBtn_"+treeNode.tId);
+			if (addBtn) addBtn.bind("click", function(){
+				$("#text_queryName").val("");
+				$("#hid_operType").val("0");
+				switch (treeNode.level){
+					case 0:$("#hid_operTable").val("catalog");break;
+					case 1:$("#hid_operTable").val("class");break;
+					case 2:$("#hid_operTable").val("product");break;
+					case 3:$("#hid_operTable").val("module");break;
+				}
+				$("#hid_queryCatalogId").val(treeNode.catalogId);
+				$("#hid_queryClassId").val(treeNode.classId);
+				$("#hid_queryProductId").val(treeNode.productId);
+				$("#hid_queryModuleId").val(treeNode.moduleId);
+				if(treeNode.level == 2){
+					$("#div_serverBuildId").show();
+					$("#div_queryServerRoomId").show();
+					$("#serverBuild").val(-1);
+					$("#serverRoom").empty().append("<option value=\"-1\">请选择</option>");
+				}else{
+					$("#div_serverBuildId").hide();
+					$("#div_queryServerRoomId").hide();
+				}
+				layer.open({
+	        		title: false,
+	                type: 1,
+	                closeBtn:false,
+	                skin: 'layui-layer-nobg',
+	                area: ['534px', '240px'],
+	                scrollbar: false,
+	                shadeClose: false, //点击遮罩关闭
+	                content: $('#popup01')
+	            });
+				return false;
+			});
+		}
+		if(treeNode.level != 0){
+			var editStr = "<span class='button edit' id='editBtn_" + treeNode.tId + "' title='修改' onfocus='this.blur();'></span>";
+			sObj.after(editStr);
+			var editBtn = $("#editBtn_"+treeNode.tId);
+			if (editBtn) editBtn.bind("click", function(){
+				$("#hid_operType").val("1");
+				$("#text_queryName").val(treeNode.name);
+				switch (treeNode.level){
+					case 1:$("#hid_operTable").val("catalog");break;
+					case 2:$("#hid_operTable").val("class");break;
+					case 3:$("#hid_operTable").val("product");break;
+					case 4:$("#hid_operTable").val("module");break;
+				}
+				$("#hid_queryCatalogId").val(treeNode.catalogId);
+				$("#hid_queryClassId").val(treeNode.classId);
+				$("#hid_queryProductId").val(treeNode.productId);
+				$("#hid_queryModuleId").val(treeNode.moduleId);
+				
+				if(treeNode.level == 3){
+					$("#div_serverBuildId").show();
+					$("#div_queryServerRoomId").show();
+					//alert(treeNode.serverBuildId+"_"+treeNode.serverRoomId);
+					$("#serverBuild").val(treeNode.serverBuildId);
+					selectServerRoom(treeNode.serverBuildId,false);
+					$("#serverRoom").val(treeNode.serverRoomId);
+				}else{
+					$("#div_serverBuildId").hide();
+					$("#div_queryServerRoomId").hide();
+				}
+				
+				layer.open({
+	        		title: false,
+	                type: 1,
+	                closeBtn:false,
+	                skin: 'layui-layer-nobg',
+	                area: ['534px', '240px'],
+	                scrollbar: false,
+	                shadeClose: false, //点击遮罩关闭
+	                content: $('#popup01')
+	            });
+				return false;
+			});
+		}
+	 }
+};
+function removeHoverDom(treeId, treeNode) {
+	$("#addBtn_"+treeNode.tId).unbind().remove();
+	$("#editBtn_"+treeNode.tId).unbind().remove();
+};
+
+function showRemoveBtn(treeId, treeNode){
+	if(treeNode.level == 0)
+		return false;
+	else
+		return true;
+}
+
+function beforeRemove(treeId, treeNode) {
+	//className = (className === "dark" ? "":"dark");
+	//var zTree = $.fn.zTree.getZTreeObj("treeDepartment");
+	//zTree.selectNode(treeNode);
+	switch (treeNode.level){
+		case 1:$("#hid_operTable").val("catalog");break;
+		case 2:$("#hid_operTable").val("class");break;
+		case 3:$("#hid_operTable").val("product");break;
+		case 4:$("#hid_operTable").val("module");break;
+	}
+	$("#hid_queryCatalogId").val(treeNode.catalogId);
+	$("#hid_queryClassId").val(treeNode.classId);
+	$("#hid_queryProductId").val(treeNode.productId);
+	$("#hid_queryModuleId").val(treeNode.moduleId);
+	
+	var delflag = false;
+	if (confirm("确认删除  -- " + treeNode.name + "以及它下面包含的子节点 吗？")){
+		switch ($("#hid_operTable").val()){
+			case "catalog": statisticsObject.deleteData('${deleteCatalogUrl}');break;
+			case "class": statisticsObject.deleteData('${deleteClassUrl}');break;
+			case "product": statisticsObject.deleteData('${deleteProductUrl}');break;
+			case "module": statisticsObject.deleteData('${deleteModuleUrl}');break;
+ 		}
+		return true;
+	}
+	return delflag;
+}
+</script>
+</head>
+<body>
+	<jsp:include page="/WEB-INF/common/modal.jsp" flush="true"></jsp:include>
+	<jsp:include page="/WEB-INF/common/header.jsp" flush="true"></jsp:include>
+	<div class="main">
+		<jsp:include page="/WEB-INF/common/sidel.jsp" flush="true"></jsp:include>
+		<div class="con computer_room">
+			<div class="frame">
+				<div class="title">
+					<i></i> <span class="blue">业务配置</span> 
+					/ <span>业务架构管理</span>
+					<sec:authorize ifAllGranted="ROLE_QUERY_WEB_SERVICEARCHITECTURE">
+					 <button class="fr drop_down">查询</button>
+					 </sec:authorize>
+				</div>
+				
+            <div class="time_search" style = "display:none;">
+                <div class="fl option">
+                
+                  <div>
+            <label for="">业务名称：</label>
+            <input type = "text"  id = "text_name"    value = ""  />
+        </div>
+                
+                
+                </div>
+                <div class="fr">
+                    <button class="search_button fr" id="searchBtn" type="button">查询</button>
+                </div>
+                <div style="clear:both"></div>
+               
+            </div>
+           
+				<div class="computer_room">
+					<div class="c-nav">
+	<ul id="treeSelect" class="ztree"></ul>
+</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="popup" id="popup01">
+        <div class="windowtitle">业务<button class="close" id="popup01close">x</button></div>
+        <div class="windowform">
+        <form id="operForm">
+        	<input type="hidden" name="queryCatalogId" id = "hid_queryCatalogId" />
+            <input type="hidden" name="queryClassId" id = "hid_queryClassId" />
+            <input type="hidden" name="queryProductId" id = "hid_queryProductId" />
+            <input type="hidden" name="queryModuleId" id = "hid_queryModuleId" />
+            
+            <input type="hidden"  id = "hid_operType" value = "0"/>
+            <input type="hidden"  id = "hid_operTable" value = ""/>
+           <tdc:selectorRoomBuild></tdc:selectorRoomBuild>
+            <div>
+                <label >名称：</label>
+                <input type="text" name="queryName" id = "text_queryName" value = "">
+                 <i class="required">*</i>
+            </div>
+            <div class="confirm">
+                <label></label>
+                <button type="button" id = "btnOper">确定</button>
+				<button type="button" class="btnwhite" id = "btnCancel">取消</button>
+			</div>
+          </form>
+            
+        </div>
+        <div class="bottom"></div>
+    </div>
+  <script type="text/javascript">	
+	
+	
+	</script>
+	<script src="${scriptPath}/view/serviceConfiguration/serviceArchitecture.js" type="text/javascript"></script>
+</body>
+</html>

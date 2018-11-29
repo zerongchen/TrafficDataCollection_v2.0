@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aotain.tdc.dao.common.Commondao">
+
+	<resultMap type="com.aotain.tdc.dto.common.SelectorBean" id="SelectorMap">
+		<result column="POSITION_ID" property="positionId" jdbcType="BIGINT" />
+		<result column="PARENT_ID" property="parentId" jdbcType="BIGINT" />
+		<result column="POSITION_NAME" property="positionName"
+			jdbcType="VARCHAR" />
+		<result column="POSITION_TYPE" property="positionType"
+			jdbcType="INTEGER" />
+		<result column="CARRIER_ID" property="carrierId" jdbcType="BIGINT" />
+		<result column="CARRIER_NAME" property="carrierName" jdbcType="VARCHAR" />
+		<result column="CATALOGID" property="catalogId" jdbcType="BIGINT" />
+		<result column="CATANAME" property="cataName" jdbcType="VARCHAR" />
+		<result column="ORDERID" property="orderId" jdbcType="INTEGER" />
+		<result column="DESCINFO" property="descInfo" jdbcType="VARCHAR" />
+		<result column="CLASSID" property="classId" jdbcType="BIGINT" />
+		<result column="CLASSNAME" property="className" jdbcType="VARCHAR" />
+		<result column="PRODUCTID" property="productId" jdbcType="BIGINT" />
+		<result column="PRODUCT_NAME" property="productName" jdbcType="VARCHAR" />
+		<result column="PROTOCOL_ID" property="protocolId" jdbcType="INTEGER" />
+		<result column="PROTOCOL_NAME" property="protocolName"
+			jdbcType="VARCHAR" />
+		<result column="PROTOCOL_TYPE" property="protocolType"
+			jdbcType="INTEGER" />
+		<result column="MODULEID" property="moduleId" jdbcType="BIGINT" />
+		<result column="MODULE_NAME" property="moduleName" jdbcType="VARCHAR" />
+		<result column="PAGEID" property="pageId" jdbcType="BIGINT" />
+		<result column="PAGE_NAME" property="pageName" jdbcType="VARCHAR" />
+		<result column="PAGE_PRODUCTID" property="pageProductId" jdbcType="BIGINT" />
+		<result column="PAGE_PRODUCTNAME" property="pageProductName" jdbcType="VARCHAR" />
+		<result column="PAGE_MODULEID" property="pageModuleId" jdbcType="BIGINT" />
+		<result column="PAGE_MODULENAME" property="pageModuleName" jdbcType="VARCHAR" />
+		<result column="PAGE_URL" property="pageUrl" jdbcType="VARCHAR" />
+		<result column="SERVERBUILD_ID" property="serverBuildId" jdbcType="BIGINT" />
+		<result column="SERVERBUILD_NAME" property="serverBuildName" jdbcType="VARCHAR" /> 
+		<result column="SERVERROOM_ID" property="serverRoomId" jdbcType="BIGINT" />
+		<result column="SERVERROOM_NAME" property="serverRoomName" jdbcType="VARCHAR" />
+		<result column="LASTUPDATE_TIME" property="lastUpdateTime" jdbcType="DATE" />
+		<result column="QUOTA_ID" property="quotaId" jdbcType="BIGINT" />
+		<result column="QUOTA_NAME" property="quotaName" jdbcType="VARCHAR" />
+		<result column="QUOTA_WEIGHT" property="quotaWeight" jdbcType="FLOAT" />
+		<result column="QUOTA_FULL_POINT" property="quotaFullPoint"
+			jdbcType="FLOAT" />
+		<result column="QUOTA_GOOD_POINT" property="quotaGoodPoint"
+			jdbcType="FLOAT" />
+		<result column="QUOTA_BASE_POINT" property="quotaOkPoint"
+			jdbcType="FLOAT" />
+		<result column="QUOTA_STEP" property="quotaBasePoint" jdbcType="FLOAT" />
+
+		<result column="STRATEGY_TYPE" property="strategyType"
+			jdbcType="INTEGER" />
+		<result column="STRATEGY_ID" property="strategyId" jdbcType="BIGINT" />
+		<result column="STRATEGY_NAME" property="strategyName" jdbcType="VARCHAR" />
+		<result column="FTP_ID" property="ftpId" jdbcType="BIGINT" />
+		<result column="FTP_NAME" property="ftpName" jdbcType="VARCHAR" />
+		<result column="IP" property="ip" jdbcType="VARCHAR" />
+		<result column="PORT" property="port" jdbcType="INTEGER" />
+		<result column="USERNAME" property="userName" jdbcType="VARCHAR" />
+		<result column="PASSWD" property="passwd" jdbcType="VARCHAR" />
+		<result column="CREATETIME" property="createTime" jdbcType="DATE" />
+		<result column="CREATE_USER" property="createUser" jdbcType="VARCHAR" />
+		<result column="DST_IP" property="dstIp" jdbcType="VARCHAR" />
+		<result column="DST_PORT" property="dstPort" jdbcType="VARCHAR" />
+		
+		<result column="BIZ_ID" property="bizId" jdbcType="BIGINT" />
+		<result column="BIZ_NAME" property="bizName" jdbcType="VARCHAR" />
+		<result column="PARENT_ID" property="parentId" jdbcType="BIGINT" />		
+		
+		<result column="DELETE_FLAG" property="deleteFlag" jdbcType="INTEGER" />
+		<result column="ORDER_ID" property="orderId" jdbcType="INTEGER" />
+	</resultMap>
+	
+	<select id="selectBizInfo" resultMap="SelectorMap">
+		SELECT BIZ_ID,BIZ_NAME,PARENT_ID FROM DIC_BIZ_INFO WHERE 
+		IFNULL(DELETE_FLAG, 0) != 1  AND RESOURCE_MARK = 0
+		<!-- WHERE DELETE_FLAG != 0 -->
+	</select>
+	
+	<select id="selectBaseRePool" resultMap="SelectorMap">
+		SELECT BIZ_ID,BIZ_NAME,PARENT_ID FROM DIC_BIZ_INFO WHERE 
+		IFNULL(DELETE_FLAG, 0) != 1  AND RESOURCE_MARK != 0
+		<!-- WHERE DELETE_FLAG != 0 -->
+	</select>
+	
+	<select id="selectBRoom" resultMap="SelectorMap">
+		SELECT SERVERBUILD_ID,SERVERBUILD_NAME FROM DIC_SERVERBUILD
+		where  
+		
+		SERVERBUILD_ID &lt;&gt; 5 and SERVERBUILD_ID &lt;&gt; 6 
+		<!-- WHERE DELETE_FLAG != 0 -->
+	</select>
+	
+	<select id="selectRoomTraffic" resultMap="SelectorMap">
+	    SELECT 100000+SERVERBUILD_ID SERVERROOM_ID   ,SERVERBUILD_NAME ,-1 SERVERBUILD_ID  FROM DIC_SERVERBUILD
+	    where  
+		
+		SERVERBUILD_ID &lt;&gt; 5 and SERVERBUILD_ID &lt;&gt; 6 
+          UNION ALL
+        select SERVERROOM_ID , SERVERROOM_NAME  ,100000+SERVERBUILD_ID serverBuildId from dic_serverroom;
+	</select>
+	
+	<select id="selectProvince" resultMap="SelectorMap">
+		SELECT POSITION_ID,
+		POSITION_NAME FROM DIC_SYS_POSITION WHERE POSITION_TYPE = 2 OR
+		POSITION_ID = -1
+	</select>
+	<select id="selectCarrier" resultMap="SelectorMap">
+		select CARRIER_ID,
+		CARRIER_NAME from DIC_CARRIER
+	</select>
+	<select id="selectCatalog" resultMap="SelectorMap">
+		select CATALOGID, CATANAME
+		from DIC_PROTO_CATALOG
+		WHERE CATALOGID &lt;&gt; 0
+	</select>
+
+	<select id="selectServerBuild" resultMap="SelectorMap">
+		SELECT SERVERBUILD_ID,
+		SERVERBUILD_NAME FROM DIC_SERVERBUILD
+		where  
+		
+		SERVERBUILD_ID &lt;&gt; 5 and SERVERBUILD_ID &lt;&gt; 6 
+	</select>
+	<select id="selectServerRoom" parameterType="int" resultMap="SelectorMap">
+		SELECT SERVERROOM_ID, SERVERROOM_NAME FROM DIC_SERVERROOM WHERE
+		SERVERBUILD_ID = #{serverBuildId}
+	</select>
+
+	<select id="selectClass" parameterType="int" resultMap="SelectorMap">
+		select CLASSID, CLASSNAME, CATALOGID from DIC_PROTO_CLASS
+		<if test="catalogId > 0">
+			where CATALOGID = #{catalogId}
+		</if>
+	</select>
+	<select id="selectProduct" parameterType="int" resultMap="SelectorMap">
+		select PRODUCTID, PRODUCT_NAME, CLASSID, CATALOGID, SERVERBUILD_ID, SERVERROOM_ID from DIC_PROTO_PRODUCT
+		<trim prefix="where" prefixOverrides="AND|OR">
+		<if test="catalogId > 0">
+			AND CATALOGID = #{catalogId}
+		</if>
+		<if test="classId > 0">
+			AND CLASSID = #{classId}
+		</if>
+		</trim>
+	</select>
+	<select id="selectModule" parameterType="int" resultMap="SelectorMap">
+		select MODULEID, MODULE_NAME, PRODUCTID from DIC_PROTO_MODULE
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+		<if test="catalogId > 0">
+			AND CATALOGID = #{catalogId}
+		</if>
+		<if test="classId > 0">
+			AND CLASSID = #{classId}
+		</if>
+		<if test="productId > 0">
+			AND PRODUCTID = #{productId}
+		</if>
+		</trim>
+	</select>
+	<select id="selectPage" parameterType="int" resultMap="SelectorMap">
+		select
+		PAGEID, PAGE_NAME from DIC_PROTO_PAGE where MODULEID = #{moduleId}
+	</select>
+	
+	<select id="selectPageProduct" resultMap="SelectorMap">
+		select
+		PAGE_PRODUCTID, PAGE_PRODUCTNAME from DIC_PAGE_PRODUCT
+	</select>
+	<select id="getDicPageProductBeanByKey" resultMap="SelectorMap"
+		parameterType="java.lang.Long">
+		select PAGE_PRODUCTID, PAGE_PRODUCTNAME from DIC_PAGE_PRODUCT
+		where PAGE_PRODUCTID = #{pageProductId} limit 1
+	</select>
+	<select id="selectPageModule" parameterType="int" resultMap="SelectorMap">
+		select
+		PAGE_MODULEID, PAGE_MODULENAME from DIC_PAGE_MODULE where PAGE_PRODUCTID = #{pageProductId}
+	</select>
+	<select id="getDicPageModuleBeanByKey" resultMap="SelectorMap"
+		parameterType="java.lang.Long">
+		select PAGE_PRODUCTID, PAGE_MODULEID, PAGE_MODULENAME from DIC_PAGE_MODULE
+		where PAGE_MODULEID = #{pageModuleId} limit 1
+	</select>
+	<select id="selectSysPosition" resultMap="SelectorMap">
+		select POSITION_ID,
+		POSITION_NAME from DIC_SYS_POSITION WHERE POSITION_TYPE = 2 OR
+		POSITION_ID = -1
+	</select>
+	<select id="selectProtocol" resultMap="SelectorMap">
+		SELECT
+		PROTOCOL_ID,PROTOCOL_NAME FROM DIC_PROTOCOL WHERE PROTOCOL_TYPE in
+		(${protocolTypeStr})
+	</select>
+	<select id="selectProtocolApplication" resultMap="SelectorMap">
+		SELECT PROTOCOL_ID,PROTOCOL_NAME FROM DIC_PROTOCOL WHERE PROTOCOL_TYPE = 1
+	</select>
+	<select id="selectRelatedIpMapping" resultMap="SelectorMap">
+		<!--
+		SELECT
+		t1.SERVERBUILD_ID, t1.SERVERBUILD_NAME, t2.SERVERROOM_ID,
+		t2.SERVERROOM_NAME, t5.CLASSID, t5.CLASSNAME FROM DIC_SERVERBUILD t1
+		left join DIC_SERVERROOM t2 on t1.SERVERBUILD_ID = t2.SERVERBUILD_ID
+		left join (select distinct CATALOGID, SERVERROOM_ID from DIC_IPMAPPING
+		where SERVERBUILD_ID>0 and SERVERROOM_ID>0) t3 on t2.SERVERROOM_ID =
+		t3.SERVERROOM_ID
+		left join DIC_PROTO_CATALOG t4 on t3.CATALOGID =
+		t4.CATALOGID
+		left join DIC_PROTO_CLASS t5 on t4.CATALOGID =
+		t5.CATALOGID
+		 
+		select t1.SERVERBUILD_ID, t1.SERVERBUILD_NAME, t2.SERVERROOM_ID, t2.SERVERROOM_NAME from dic_proto_product t0 left join
+		DIC_SERVERBUILD t1 on t0.SERVERBUILD_ID=t1.SERVERBUILD_ID left join DIC_SERVERROOM t2 on t0.SERVERBUILD_ID = t2.SERVERBUILD_ID left join
+		DIC_PROTO_Class t3 on t0.classid = t3.classid
+		WHERE t1.SERVERBUILD_ID &lt;&gt; 0 -->
+		SELECT 
+    t1.SERVERBUILD_ID,
+    t1.SERVERBUILD_NAME,
+    t2.SERVERROOM_ID,
+    t2.SERVERROOM_NAME
+FROM    DIC_SERVERBUILD t1  LEFT JOIN
+    DIC_SERVERROOM t2 ON t1.SERVERBUILD_ID = t2.SERVERBUILD_ID
+       
+WHERE
+    t1.SERVERBUILD_ID &lt;&gt; 0
+    and  t1.SERVERBUILD_ID &lt;&gt; 5 and  t1.SERVERBUILD_ID &lt;&gt; 6 
+	</select>
+	<select id="getDicCarrierBeanByKey" resultMap="SelectorMap"
+		parameterType="java.lang.Long">
+		select CARRIER_ID, CARRIER_NAME, DESCINFO from
+		DIC_CARRIER where CARRIER_ID = #{carrierId} limit 1
+	</select>
+	<select id="getDicProtoCataLogBeanByKey" resultMap="SelectorMap"
+		parameterType="java.lang.Long">
+		select CATALOGID, CATANAME, ORDERID from
+		DIC_PROTO_CATALOG where CATALOGID = #{catalogId} limit 1
+	</select>
+	<select id="getDicProtoClassBeanByKey" resultMap="SelectorMap"
+		parameterType="java.lang.Long">
+		select CLASSID, CLASSNAME, CATALOGID from
+		DIC_PROTO_CLASS where CLASSID = #{classId} limit 1
+	</select>
+	<select id="getDicProtocolBeanByKey" resultMap="SelectorMap"
+		parameterType="java.lang.Long">
+		select PROTOCOL_ID, PROTOCOL_TYPE, PROTOCOL_NAME from
+		DIC_PROTOCOL where PROTOCOL_ID = #{protocolId} 
+		<if test="type >= 0">
+		and PROTOCOL_TYPE = #{type} 
+		</if>
+		limit 1
+	</select>
+	<select id="getDicProtoProductBeanByKey" resultMap="SelectorMap"
+		parameterType="java.lang.Long">
+		select
+		PRODUCTID,PRODUCT_NAME,CLASSID,CATALOGID,SERVERBUILD_ID,SERVERROOM_ID
+		from DIC_PROTO_PRODUCT where PRODUCTID = #{productId} limit 1
+	</select>
+	<select id="getDicServerBuildBeanByKey" resultMap="SelectorMap"
+		parameterType="java.lang.Long">
+		select SERVERBUILD_ID, SERVERBUILD_NAME from
+		DIC_SERVERBUILD where SERVERBUILD_ID = #{serverBuildId} limit 1
+	</select>
+	<select id="getDicServerRoomBeanByKey" resultMap="SelectorMap"
+		parameterType="java.lang.Long">
+		select SERVERROOM_ID, SERVERBUILD_ID, SERVERROOM_NAME,
+		LASTUPDATE_TIME from DIC_SERVERROOM where SERVERROOM_ID =
+		#{serverRoomId} limit 1
+	</select>
+	<select id="getDicSysPositionBeanByKey" resultMap="SelectorMap"
+		parameterType="java.lang.Long">
+		select POSITION_ID, POSITION_NAME, PARENT_ID,
+		POSITION_TYPE from DIC_SYS_POSITION where POSITION_ID = #{positionId}
+		limit 1
+	</select>
+	<select id="getDicProtoPageBeanByKey" resultMap="SelectorMap"
+		parameterType="java.lang.Long">
+		select PAGEID, PAGE_NAME, PAGE_MODULEID, PAGE_PRODUCTID
+		from DIC_PROTO_PAGE where PAGEID =
+		#{pageId} limit 1
+	</select>
+	<select id="getDicProtoModuleBeanByKey" resultMap="SelectorMap"
+		parameterType="java.lang.Long">
+		select MODULEID, MODULE_NAME, PRODUCTID, CLASSID,
+		CATALOGID, DESCINFO from DIC_PROTO_MODULE where MODULEID = #{moduleId}
+		limit 1
+	</select>
+	<select id="selectFTPServer" resultMap="SelectorMap">
+		SELECT FTP_ID, FTP_NAME
+		FROM POLICY_FTP_SERVER
+	</select>
+	<select id="selectFTPIp" resultMap="SelectorMap">
+		SELECT IP FROM
+		POLICY_FTP_SERVER
+	</select>
+	<select id="selectStrategyName" resultMap="SelectorMap">
+		SELECT STRATEGY_ID, STRATEGY_NAME FROM POLICY_FLOW_GATHER_STRATEGY
+	</select>
+	<select id="selectStrategyReName" resultMap="SelectorMap">
+		SELECT STRATEGY_ID, STRATEGY_NAME FROM POLICY_FLOW_RECOVERY_STRATEGY
+	</select>
+	
+	<select id="selectStatStrategyName" resultMap="SelectorMap">
+		SELECT STRATEGY_ID,STRATEGY_NAME FROM POLICY_STAT_STRATEGY
+	</select>
+	
+	<select id="selectKPIConfig" resultMap="SelectorMap">
+		SELECT QUOTA_ID,
+		QUOTA_NAME, QUOTA_WEIGHT, QUOTA_FULL_POINT, QUOTA_GOOD_POINT,
+		QUOTA_BASE_POINT, QUOTA_STEP FROM WEB_MODULE_QUOTA
+	</select>
+	<select id="selectClassNodes" resultMap="SelectorMap">
+		SELECT
+		CLASSID,CLASSNAME,CATALOGID FROM DIC_PROTO_CLASS
+		WHERE CLASSID &lt;&gt; 0
+	</select>
+	<select id="selectProductNodes" resultMap="SelectorMap">
+		SELECT
+		PRODUCTID,PRODUCT_NAME,CATALOGID,CLASSID,SERVERBUILD_ID,SERVERROOM_ID
+		FROM DIC_PROTO_PRODUCT
+		WHERE PRODUCTID &lt;&gt; 0
+	</select>
+	<select id="selectModuleNodes" resultMap="SelectorMap">
+		SELECT
+		MODULEID,MODULE_NAME,CATALOGID,CLASSID,PRODUCTID FROM DIC_PROTO_MODULE
+	</select>
+	<select id="selectPageNodes" resultMap="SelectorMap">
+		SELECT
+		PAGEID,PAGE_NAME,CATALOGID,CLASSID,PRODUCTID,MODULEID FROM
+		DIC_PROTO_PAGE
+	</select>
+	<select id="selectBuilding" resultMap="SelectorMap">
+		SELECT SERVERBUILD_ID,
+		SERVERBUILD_NAME FROM DIC_SERVERBUILD
+		where  
+		
+		SERVERBUILD_ID &lt;&gt; 5 and SERVERBUILD_ID &lt;&gt; 6 
+		
+	</select>
+	<select id="selectRoom" resultMap="SelectorMap">
+		SELECT SERVERROOM_ID,
+		SERVERBUILD_ID, SERVERROOM_NAME FROM DIC_SERVERROOM
+	</select>
+	<select id="selectBuildingRoom" resultType="java.util.HashMap">
+		SELECT CONCAT(a.SERVERBUILD_NAME,'-',b.SERVERROOM_NAME) serverRoomName, CONCAT(a.SERVERBUILD_ID, '-', b.SERVERROOM_ID) serverRoomId FROM dic_serverbuild a left join dic_serverroom b on a.serverbuild_id=b.serverbuild_id;
+	</select>
+	<select id="getPolicyDstIPPortBeanByKey" resultMap="SelectorMap">
+		SELECT * FROM POLICY_DST_IPPORT where STRATEGY_ID = #{strategyId} and STRATEGY_TYPE=2
+	</select>
+	<select id="getColPolicyDstIPPortBeanByKey" resultMap="SelectorMap">
+		SELECT * FROM POLICY_DST_IPPORT where STRATEGY_ID = #{strategyId} and STRATEGY_TYPE=1
+	</select>
+	<select id="getPolicyDstIPPortBeanByIdType" resultMap="SelectorMap">
+		SELECT * FROM POLICY_DST_IPPORT where STRATEGY_ID = #{strategyId} and STRATEGY_TYPE=#{strategyType}
+	</select>
+	<select id="getPolicyStrategyFTPBeanByKey" resultMap="SelectorMap">
+		SELECT
+		a.STRATEGY_ID,
+		a.STRATEGY_TYPE,
+		a.FTP_ID,
+		b.FTP_NAME,
+		b.IP,
+		b.PORT,
+		b.USERNAME,
+		b.PASSWD,
+		b.CREATE_USER FROM POLICY_STRATEGY_FTP a LEFT JOIN POLICY_FTP_SERVER
+		b on a.ftp_id = b.ftp_id where a.STRATEGY_ID = #{strategyId} and a.STRATEGY_TYPE=2
+	</select>
+	<select id="getColPolicyStrategyFTPBeanByKey" resultMap="SelectorMap">
+		SELECT
+		a.STRATEGY_ID,
+		a.STRATEGY_TYPE,
+		a.FTP_ID,
+		b.FTP_NAME,
+		b.IP,
+		b.PORT,
+		b.USERNAME,
+		b.PASSWD,
+		b.CREATE_USER FROM POLICY_STRATEGY_FTP a LEFT JOIN POLICY_FTP_SERVER
+		b on a.ftp_id = b.ftp_id where a.STRATEGY_ID = #{strategyId} and a.STRATEGY_TYPE=1
+	</select>
+	<select id="selectMessageSequenceno" resultType="java.lang.Long">
+		<!-- SELECT NEXT VALUE FOR MYCATSEQ_MESSAGE_SEQUENCENO_RE -->
+		SELECT MYCAT_SEQ_NEXTVAL('MESSAGE_SEQUENCENO_RE')
+	</select>
+	<insert id="insertClog">
+		INSERT INTO DPI_V1_CLOG
+		(LOGID,
+		OP_CODE,
+		OP_TYPE,
+		RECID1,
+		RECID2,
+		BIZ_SEQ,
+		CREATE_OPER,
+		CREATE_TIME)
+		VALUES
+		(
+		<!--NEXT VALUE FOR MYCATSEQ_DPI_V1_CLOG,-->
+		MYCAT_SEQ_NEXTVAL('DPI_V1_CLOG'),
+		#{OP_CODE},
+		#{OP_TYPE},
+		#{RECID1},
+		#{RECID2},
+		0,
+		#{CREATE_OPER},
+		SYSDATE());
+	</insert>
+	<insert id="insertBizClog">
+		INSERT INTO biz_v1_clog
+		(OP_CODE,OP_TYPE,RECID1,RECID2,BIZ_SEQ,CREATE_OPER,CREATE_TIME)
+		VALUES (#{OP_CODE},#{OP_TYPE},0,0,0,#{CREATE_OPER},SYSDATE());
+	</insert>
+	<select id="getWebServiceinfoSeqNextVal"  resultType="int">
+		<!-- SELECT NEXT VALUE FOR MYCATSEQ_WEB_SERVICEINFO -->
+		SELECT MYCAT_SEQ_NEXTVAL('WEB_SERVICEINFO')
+	</select>
+	
+	<select id="getDicIpmappingSeqNextVal"  resultType="int">
+		<!-- SELECT NEXT VALUE FOR MYCATSEQ_DIC_IPMAPPING -->
+		SELECT MYCAT_SEQ_NEXTVAL('DIC_IPMAPPING')
+	</select>
+	
+	<select id="getDicIpportSeqNextVal"  resultType="int">
+		<!-- SELECT NEXT VALUE FOR MYCATSEQ_DIC_IPPORT -->
+		SELECT MYCAT_SEQ_NEXTVAL('DIC_IPPORT')
+	</select>
+	
+	<select id="getCatalogIdByName"  resultType="int">
+		SELECT NEXT VALUE FOR DIC_PROTO_CATALOG
+	</select>
+	
+	<insert id="insertServerBuild">
+		<selectKey keyProperty="queryServerBuildId" resultType="java.lang.Long" order="BEFORE">
+			<!-- SELECT NEXT VALUE FOR MYCATSEQ_DIC_SERVER_BUILD_ID -->
+			SELECT MYCAT_SEQ_NEXTVAL('DIC_SERVER_BUILD_ID')
+		</selectKey>
+		INSERT INTO DIC_SERVERBUILD
+		(SERVERBUILD_ID,
+		SERVERBUILD_NAME)
+		VALUES
+		(#{queryServerBuildId},
+		#{queryName})
+	</insert>
+	<insert id="insertServerRoom">
+		<selectKey keyProperty="queryServerRoomId" resultType="java.lang.Long" order="BEFORE">
+		<!-- SELECT NEXT VALUE FOR MYCATSEQ_DIC_SERVER_ROOM_ID -->
+		SELECT MYCAT_SEQ_NEXTVAL('DIC_SERVER_ROOM_ID')
+	  	</selectKey>
+		INSERT INTO DIC_SERVERROOM
+		(SERVERROOM_ID,
+		SERVERBUILD_ID,
+		SERVERROOM_NAME,
+		LASTUPDATE_TIME)
+		VALUES
+		(#{queryServerRoomId},
+		#{queryServerBuildId},
+		#{queryName},
+		SYSDATE())
+	</insert>
+	<select id="getSeqNextVal" parameterType="string" resultType="int">
+		SELECT MYCAT_SEQ_NEXTVAL(#{tableName}) FROM DUAL
+	</select>
+	<select id="getPolicyStrategyFTPBeanByIdType" resultMap="SelectorMap">
+		SELECT
+		a.STRATEGY_ID,
+		a.STRATEGY_TYPE,
+		a.FTP_ID,
+		b.FTP_NAME,
+		b.IP,
+		b.PORT,
+		b.USERNAME,
+		b.PASSWD,
+		b.CREATE_USER FROM POLICY_STRATEGY_FTP a LEFT JOIN POLICY_FTP_SERVER
+		b on a.ftp_id = b.ftp_id where a.STRATEGY_ID = #{strategyId} and a.STRATEGY_TYPE=#{strategyType}
+	</select>
+	<select id="selectDicBizInfo" resultMap="SelectorMap">
+		SELECT BIZ_ID, BIZ_NAME, PARENT_ID,  DELETE_FLAG, ORDER_ID FROM DIC_BIZ_INFO 
+		WHERE IFNULL(DELETE_FLAG, 0) != 1 AND BIZ_ID = #{bizId} 
+	</select>	
+	
+</mapper>

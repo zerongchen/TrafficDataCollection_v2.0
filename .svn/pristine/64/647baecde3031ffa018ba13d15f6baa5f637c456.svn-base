@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!-- name must be unique -->
+<sysmenu sysname="中移流量采集系统">
+	<FirstMenu name="首页" url="/welcome.do"></FirstMenu>
+	<FirstMenu name="流量分析" url="/path/traffic.do" icon="icon_b">
+		<SecondMenu url="" name="总览概况" icon="icon_a">
+			<ThirdMenu url="/traffic/trafficOverview/index.do" name="流量总览概况">流量总览概况</ThirdMenu>
+		</SecondMenu>
+		<SecondMenu url="" name="流量监控" icon="icon_b">
+			<ThirdMenu url="/traffic/trafficMonitor/roomTraffic/index.do" name="机房流量">机房流量</ThirdMenu>
+			<ThirdMenu url="/traffic/trafficMonitor/protocolTraffic/index.do" name="协议流量">协议流量</ThirdMenu>
+			<ThirdMenu url="/traffic/trafficMonitor/bizTraffic/index.do" name="业务流量">业务流量</ThirdMenu>
+		</SecondMenu>
+		<SecondMenu url="" name="流向分析" icon="icon_c">
+			<ThirdMenu url="/traffic/trafficAnalysis/region/index.do" name="地域来源">地域来源</ThirdMenu>
+			<ThirdMenu url="/traffic/trafficAnalysis/carrier/index.do" name="运营商来源">运营商来源</ThirdMenu>
+			<ThirdMenu url="/traffic/trafficAnalysis/regionCarrier/index.do" name="地域运营商来源">地域运营商来源</ThirdMenu>
+			<ThirdMenu url="/traffic/trafficAnalysis/serviceTraffic/index.do" name="业务流向">业务流向</ThirdMenu>
+			<ThirdMenu url="/traffic/trafficAnalysis/ipAddress/index.do" name="IP地址">IP地址</ThirdMenu>
+		</SecondMenu>
+		<SecondMenu url="" name="资源池分析" icon="icon_d">
+			<ThirdMenu url="/traffic/baseResourcePool/baseResPool/index.do" name="基地资源池">基地资源池</ThirdMenu>
+		</SecondMenu>
+	</FirstMenu>
+	
+	<FirstMenu name="质量分析" url="/path/quality.do"  icon="icon_c">
+		<SecondMenu url="" name="网络质量分析" icon="icon_a">
+			<ThirdMenu url="/quality/netQualityAnalysis/roomQuality/index.do" name="机房质量">机房质量</ThirdMenu>
+			<ThirdMenu url="/quality/netQualityAnalysis/areaQuality/index.do" name="地域质量">地域质量</ThirdMenu>
+			<ThirdMenu url="/quality/netQualityAnalysis/carrierQuality/index.do" name="运营商质量">运营商质量</ThirdMenu>
+		    <ThirdMenu url="/quality/netQualityAnalysis/regionCarrierQuality/index.do" name="地域运营商质量">地域运营商质量</ThirdMenu>
+		</SecondMenu>
+		<SecondMenu url="" name="业务质量分析" icon="icon_b">
+			<ThirdMenu url="/quality/productQualityAnalysis/productQuality/index.do" name="业务质量">业务质量</ThirdMenu>
+			<ThirdMenu url="/quality/ipQualityAnalysis/ipQuality/index.do" name="IP地址质量">IP地址质量</ThirdMenu>
+		</SecondMenu>
+		<SecondMenu url="" name="错误码分析" icon="icon_b">
+			<ThirdMenu url="/quality/errorCodeAnalysis/errorCode/index.do" name="错误码分布">错误码分布</ThirdMenu>
+		</SecondMenu>
+		<SecondMenu url="" name="用户质量分析" icon="icon_b">
+			<ThirdMenu url="/quality/userQualityAnalysis/callBill/index.do" name="话单回溯查询">话单回溯查询</ThirdMenu>
+		</SecondMenu>
+	</FirstMenu>
+	
+	<FirstMenu name="业务分析" url="/path/bizconfig.do" icon="icon_e">
+		<SecondMenu url="" name="业务访问量分析" icon="icon_a">
+			<ThirdMenu url="/traffic/businessAnalysis/topBusinessAnalysis/index.do" name="TOP业务分析">TOP业务分析</ThirdMenu>
+			<ThirdMenu url="/traffic/businessAnalysis/regionProduct/index.do" name="业务地域分布">业务地域分布</ThirdMenu>
+			<ThirdMenu url="/traffic/businessAnalysis/carrierProduct/index.do" name="业务运营商分布">业务运营商分布</ThirdMenu>
+			<ThirdMenu url="/traffic/businessAnalysis/businessTrend/index.do" name="业务发展趋势">业务发展趋势</ThirdMenu>
+		</SecondMenu>
+		<SecondMenu url="" name="页面分析" icon="icon_b">
+			<ThirdMenu url="/traffic/businessAnalysis/topPageAnalysis/index.do" name="TOP页面分析">TOP页面分析</ThirdMenu>
+			<ThirdMenu url="/traffic/businessAnalysis/pageAnalysis/index.do" name="质差页面分析">质差页面分析</ThirdMenu>
+			<ThirdMenu url="/traffic/businessAnalysis/urlQuality/index.do" name="热门url">热门url</ThirdMenu>
+		</SecondMenu>
+	</FirstMenu>
+	
+	<FirstMenu name="告警管理" url=""  icon="icon_e">
+		<SecondMenu url="" name="总览概况">
+			<ThirdMenu url="" name="流量总览概况">流量总览概况</ThirdMenu>
+		</SecondMenu>
+		<SecondMenu url="" name="流量监控">
+			<ThirdMenu url="" name="机房流量">机房流量</ThirdMenu>
+			<ThirdMenu url="" name="协议流量">协议流量</ThirdMenu>
+		</SecondMenu>
+		<SecondMenu url="" name="流向分析">
+			<ThirdMenu url="" name="地域来源">地域来源</ThirdMenu>
+			<ThirdMenu url="" name="运营商来源">运营商来源</ThirdMenu>
+			<ThirdMenu url="" name="地域运营商来源">地域运营商来源</ThirdMenu>
+			<ThirdMenu url="" name="业务流向">业务流向</ThirdMenu>
+			<ThirdMenu url="" name="IP地址">IP地址</ThirdMenu>
+		</SecondMenu>
+		<SecondMenu url="" name="资源池分析">
+			<ThirdMenu url="" name="基地资源池">基地资源池</ThirdMenu>
+		</SecondMenu>
+	</FirstMenu>
+	<FirstMenu name="业务配置" url="/path/businessinfo.do" icon="icon_h">
+		<SecondMenu url="" name="业务配置" icon="icon_a">
+			<ThirdMenu url="/serviceConfiguration/bizManage/index.do" name="业务信息管理">业务信息管理</ThirdMenu> 
+			<ThirdMenu url="/serviceConfiguration/baseResPool/index.do" name="基地资源池信息管理">基地资源池信息管理</ThirdMenu>
+			<!-- 
+			<ThirdMenu url="/serviceConfiguration/businessInformation/index.do" name="业务信息管理">业务信息管理</ThirdMenu>
+			<ThirdMenu url="/serviceConfiguration/bizManage/index.do" name="业务架构配置">业务架构配置</ThirdMenu>
+			<ThirdMenu url="/serviceConfiguration/businessArchitecture/index.do" name="业务信息配置">业务信息配置</ThirdMenu>  
+			-->
+		</SecondMenu>
+		<SecondMenu url="" name="机房配置" icon="icon_a">
+			<ThirdMenu url="/serviceConfiguration/roomTraffic/index.do" name="机房信息管理">机房信息管理</ThirdMenu>
+			<!-- 
+			<ThirdMenu url="/serviceConfiguration/businessInformation/index.do" name="业务信息管理">业务信息管理</ThirdMenu>
+			<ThirdMenu url="/serviceConfiguration/bizManage/index.do" name="业务架构配置">业务架构配置</ThirdMenu>
+			<ThirdMenu url="/serviceConfiguration/businessArchitecture/index.do" name="业务信息配置">业务信息配置</ThirdMenu>  
+			-->
+		</SecondMenu>
+	</FirstMenu>
+	<FirstMenu name="策略配置" url="/path/strategy.do" icon="icon_h">
+		<SecondMenu url="" name="配置管理" icon="icon_a">
+			<ThirdMenu url="/strategy/management/ftpServerManagement/index.do" name="FTP服务器管理">FTP服务器管理</ThirdMenu>
+			<ThirdMenu url="/strategy/management/trafficCollectionManagement/index.do" name="流量采集管理">流量采集管理</ThirdMenu>
+			<ThirdMenu url="/strategy/management/trafficRecoveryManagement/index.do" name="流量还原管理">流量还原管理</ThirdMenu>
+			<ThirdMenu url="/strategy/management/trafficStatStrategyManagement/index.do" name="统计数据管理">统计数据管理</ThirdMenu>
+			<ThirdMenu url="/strategy/management/dataReuse/index.do" name="数据复用监控">数据复用监控</ThirdMenu>
+			<ThirdMenu url="/strategy/management/account/index.do" name="接口账号管理">接口账号管理</ThirdMenu>
+		</SecondMenu>
+	</FirstMenu>
+	<FirstMenu name="系统配置" url="/path/sysconfig.do" icon="icon_g">
+		<SecondMenu url="" name="配置管理" icon="icon_a">
+			<ThirdMenu url="/sysconfig/configmanage/tablemanage/index.do" name="报表管理">报表管理</ThirdMenu>
+		</SecondMenu>
+		<SecondMenu url="" name="指标管理" icon="icon_a">
+			<ThirdMenu url="/sysconfig/quota/threshold/index.do" name="阈值管理"> 阈值管理</ThirdMenu>
+		</SecondMenu>
+	</FirstMenu>
+	<FirstMenu name="系统日志" url="/path/syslog.do" icon="icon_i">
+		<SecondMenu url="" name="登录日志" icon="icon_b">
+			<ThirdMenu url="/syslog/loginLog/loginLog/index.do" name="登录日志">登录日志</ThirdMenu>
+		</SecondMenu>
+		<SecondMenu url="" name="操作日志" icon="icon_b">
+			<ThirdMenu url="/syslog/operateLog/operateLog/index.do" name="操作日志">操作日志</ThirdMenu>
+		</SecondMenu>
+	</FirstMenu>
+</sysmenu>

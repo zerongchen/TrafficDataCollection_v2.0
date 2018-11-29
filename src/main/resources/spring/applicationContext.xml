@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:sec="http://www.springframework.org/schema/security"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xmlns:tx="http://www.springframework.org/schema/tx"
+	   xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	   xmlns:jaxws="http://cxf.apache.org/jaxws"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:mvc="http://www.springframework.org/schema/mvc"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="
+     http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+     http://www.springframework.org/schema/security  http://www.springframework.org/schema/security/spring-security-3.1.xsd
+     http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+     http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+     http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+	 http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+	 http://cxf.apache.org/jaxws
+	 http://cxf.apache.org/schemas/jaxws.xsd">
+
+	<import resource="classpath:META-INF/cxf/cxf.xml"/>
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml"/>
+
+
+
+	<jaxws:server id="command" serviceClass="com.aotain.common.webService.ICommandWebService" address="/command">
+	</jaxws:server>
+
+
+	<!-- 启动包扫描功能，以便注册带有@Controller、@Service、@repository、@Component等注解的类成为spring的bean -->
+	<context:component-scan base-package="com.aotain" />
+
+	<!-- 启动注解驱动的Spring MVC功能，注册请求url和注解POJO类方法的映射 -->
+	<mvc:annotation-driven />
+
+	<!--加载 JDBC 配置文件 -->
+	<util:properties id="propertyConfigurer" location="classpath:config/config.properties"/>
+	<context:property-placeholder properties-ref="propertyConfigurer" order="1" ignore-unresolvable="true"/>
+
+	<bean id="dataSource" class="com.aotain.common.util.DynamicRoutingDataSourceResolver">
+		<property name="targetDataSources">
+			<map key-type="java.lang.String">
+				<entry key="dataSource1" value-ref="dataSource1" />
+				<entry key="dataSource2" value-ref="dataSource2" />
+			</map>
+		</property>
+		<property name="defaultTargetDataSource" ref="dataSource1" />
+	</bean>
+
+	<!-- first data source start -->
+	<!-- 数据源以及proxool连接池配置 -->
+	<bean id="dataSource1" class="org.logicalcobwebs.proxool.ProxoolDataSource">
+		<property name="alias" value="proxoolpool"></property>
+		<property name="delegateProperties">
+			<value>user=${db.username},password=${db.password}</value>
+		</property>
+		<property name="user" value="${db.username}" />
+		<property name="password" value="${db.password}" />
+		<property name="driver" value="${db.driverClassName}" />
+		<property name="driverUrl" value="${db.url}" />
+		<property name="trace">
+			<value>true</value>
+		</property>
+		<property name="maximumConnectionCount">
+			<value>100</value>
+		</property>
+		<property name="prototypeCount">
+			<value>1</value>
+		</property>
+		<property name="houseKeepingTestSql" value="select current_date" />
+	</bean>
+	<!-- first data source end -->
+
+	<!-- implaDataSource start -->
+	<!-- 数据源以及proxool连接池配置 -->
+	<bean id="dataSource2" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driver.class.name}" />
+		<property name="url" value="${connection.url}" />
+		<property name="initialSize" value="3" />
+		<property name="minIdle" value="5" />
+		<property name="maxActive" value="5" />
+		<property name="maxWait" value="10000" />
+		<property name="testWhileIdle" value="true" />
+		<property name="testOnBorrow" value="true" />
+		<property name="poolPreparedStatements" value="true" />
+		<property name="validationQuery" value="select now()" />
+	</bean>
+	<!-- implaDataSource end -->
+
+	<!-- 定义事务管理，数据源为Session工厂的数据源 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.aotain.tdc.dao" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+	</bean>
+
+	<!-- 定义Mybatis的Session工厂,typeAliasesPackage为entity包全名,多个用逗号或者分号隔开 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="typeAliasesPackage" value="com.aotain.tdc.dto" />
+		<property name="mapperLocations" value="classpath:com/aotain/tdc/dao/*.xml" />
+		<property name="configurationProperties" ref="propertyConfigurer"></property>
+	</bean>
+
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="sqlSessionFactory" />
+	</bean>
+
+	<!-- spring security相关配置 Start -->
+	<sec:global-method-security secured-annotations="enabled" />
+	<sec:http realm="secRealm">
+		<sec:form-login login-page="/login.jsp" authentication-failure-url="/login.jsp" default-target-url="/welcome.do" />
+		<!-- <sec:logout logout-success-url="/login.jsp" invalidate-session="true" logout-url="/logout.do" /> -->
+	</sec:http>
+	<sec:authentication-manager>
+		<sec:authentication-provider user-service-ref="userDetailService">
+			<!--use md5 encode password -->
+			<sec:password-encoder hash="md5" />
+		</sec:authentication-provider>
+	</sec:authentication-manager>
+	<bean id="concurrencyFilter" class="org.springframework.security.web.session.ConcurrentSessionFilter">
+		<property name="sessionRegistry" ref="sessionRegistry" />
+		<property name="expiredUrl" value="/login.jsp" />
+	</bean>
+
+	<bean id="sas" class="org.springframework.security.web.authentication.session.ConcurrentSessionControlStrategy">
+		<constructor-arg name="sessionRegistry" ref="sessionRegistry" />
+		<property name="maximumSessions" value="-1" />
+	</bean>
+
+	<bean id="sessionRegistry" class="org.springframework.security.core.session.SessionRegistryImpl" />
+	<!-- spring security相关配置 End -->
+
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<!-- set the max upload size100MB -->
+		<property name="maxUploadSize">
+			<value>${upload.maxFileSize}</value>
+		</property>
+		<property name="maxInMemorySize">
+			<value>4096</value>
+		</property>
+	</bean>
+
+
+
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<!-- 事务开启规则 -->
+			<tx:method name="insert*" propagation="NESTED" rollback-for="Exception" />
+			<tx:method name="add*" propagation="NESTED" rollback-for="Exception" />
+			<tx:method name="update*" propagation="NESTED" rollback-for="Exception" />
+			<tx:method name="modify*" propagation="NESTED" rollback-for="Exception" />
+			<tx:method name="edit*" propagation="NESTED" rollback-for="Exception" />
+			<tx:method name="del*" propagation="NESTED" rollback-for="Exception" />
+			<tx:method name="save*" propagation="NESTED" rollback-for="Exception" />
+			<tx:method name="send*" propagation="NESTED" rollback-for="Exception" />
+			<tx:method name="get*" read-only="true" />
+			<tx:method name="export*" read-only="true" />
+			<tx:method name="find*" read-only="true" />
+			<tx:method name="query*" read-only="true" />
+			<tx:method name="search*" read-only="true" />
+			<tx:method name="select*" read-only="true" />
+			<tx:method name="count*" read-only="true" />
+		</tx:attributes>
+	</tx:advice>
+
+	<aop:config>
+		<aop:pointcut id="txMethod" expression="execution(* com.aotain.tdc.service..*.*(..))" />
+		<aop:advisor advice-ref="dataSourceExchange" pointcut-ref="txMethod" order="1" /><!-- 切换数据源 -->
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="txMethod" order="2" /><!-- 自动开启事务 -->
+	</aop:config>
+	<aop:aspectj-autoproxy />
+</beans>

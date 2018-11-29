@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aotain.tdc.dao.strategy.ReUseDao">
+	<select id="getPageList" resultType="java.util.HashMap">
+		select * from (
+			select a.*, b.SUCCESS_FILE_NUM, b.FAIL_FILE_NUM from (
+				select URL,DOMAIN,PROTOCOLTYPE_ID,CATALOGID,CLASSID,PRODUCTID,MODULEID,SRC_IP,SRC_PORT,CREATETIME,create_user,'系统自建' as CREATET_TYPE, STRATEGY_ID, 1 as STRATEGY_TYPE, '流量采集策略' as STRATEGY_TYPE_NAME, STRATEGY_NAME, CREATETIME as START_TIME, if(STATUS=0,'未启用',(if(STATUS=1,'正常运行',(if(STATUS=2,'传输中止','已停用'))))) as STATUS, STATUS as STATUS_NUM from POLICY_FLOW_GATHER_STRATEGY
+				union all 
+				select URL,DOMAIN,0,CATALOGID,CLASSID,PRODUCTID,MODULEID,SRC_IP,SRC_PORT,CREATETIME,create_user,'系统自建' as CREATET_TYPE, STRATEGY_ID, 2 as STRATEGY_TYPE, '流量还原策略' as STRATEGY_TYPE_NAME, STRATEGY_NAME, CREATETIME as START_TIME, if(STATUS=0,'未启用',(if(STATUS=1,'正常运行',(if(STATUS=2,'传输中止','已停用'))))) as STATUS, STATUS as STATUS_NUM from POLICY_FLOW_RECOVERY_STRATEGY
+				union all 
+				select '','',0,CATALOGID,CLASSID,PRODUCTID,MODULEID,'','',CREATETIME,create_user,'系统自建' as CREATET_TYPE, STRATEGY_ID, 3 as STRATEGY_TYPE, '统计数据策略' as STRATEGY_TYPE_NAME, STRATEGY_NAME, CREATETIME as START_TIME, if(STATUS=0,'未启用',(if(STATUS=1,'正常运行',(if(STATUS=2,'传输中止','已停用'))))) as STATUS, STATUS as STATUS_NUM from POLICY_STAT_STRATEGY
+			) a left join (select STRATEGY_TYPE,STRATEGY_ID,sum(SUCCESS_FILE_NUM) SUCCESS_FILE_NUM,sum(FAIL_FILE_NUM) FAIL_FILE_NUM from POLICY_STATDATA group by STRATEGY_TYPE, STRATEGY_ID) b on a.STRATEGY_TYPE = b.STRATEGY_TYPE and a.STRATEGY_ID = b.STRATEGY_ID
+			<trim prefix="WHERE" prefixOverrides="AND">
+				<if test=" queryStartTime!= null and queryStartTime != '' ">
+					AND a.CREATETIME >= #{queryStartTime}
+				</if>
+				<if test=" queryEndTime != null and queryEndTime != '' ">
+					AND a.CREATETIME &lt;= #{queryEndTime}
+				</if>
+				<if test=" queryStrategyType != null and queryStrategyType > 0 ">
+					AND a.STRATEGY_TYPE = #{queryStrategyType}
+				</if>
+				<if test=" queryStatus != null and queryStatus >= 0 ">
+					AND a.STATUS_NUM = #{queryStatus}
+				</if>
+				<if test=" queryFTPServerId != null and queryFTPServerId > 0 ">
+					AND a.STRATEGY_ID in (select STRATEGY_ID from
+					POLICY_STRATEGY_FTP t1 left join POLICY_FTP_SERVER t2 on
+					t1.FTP_ID=t2.FTP_ID where
+					t2.FTP_ID=#{queryFTPServerId})
+				</if>
+				<if test=" queryStrategyId != null and queryStrategyId > 0 ">
+					AND a.STRATEGY_ID = #{queryStrategyId}
+				</if>
+			</trim>
+		) c
+		<if test=" order != null and order != '' and sort != null and sort != '' ">  
+			order by ${sort} ${order}
+		</if>
+		<if test="isPaging == 1">
+			LIMIT #{startRow}, #{endRow}
+		</if>
+	</select>
+	<select id="getTotalCount" resultType="java.lang.Integer">
+		select count(1) from (
+			select a.*, b.SUCCESS_FILE_NUM, b.FAIL_FILE_NUM from (
+				select URL,DOMAIN,PROTOCOLTYPE_ID,CATALOGID,CLASSID,PRODUCTID,MODULEID,SRC_IP,SRC_PORT,CREATETIME,create_user,'系统自建' as CREATET_TYPE, STRATEGY_ID, 1 as STRATEGY_TYPE, '流量采集策略' as STRATEGY_TYPE_NAME, STRATEGY_NAME, CREATETIME as START_TIME, if(STATUS=0,'未启用',(if(STATUS=1,'正常运行',(if(STATUS=2,'传输中止','已停用'))))) as STATUS, STATUS as STATUS_NUM from POLICY_FLOW_GATHER_STRATEGY
+				union all 
+				select URL,DOMAIN,0,CATALOGID,CLASSID,PRODUCTID,MODULEID,SRC_IP,SRC_PORT,CREATETIME,create_user,'系统自建' as CREATET_TYPE, STRATEGY_ID, 2 as STRATEGY_TYPE, '流量还原策略' as STRATEGY_TYPE_NAME, STRATEGY_NAME, CREATETIME as START_TIME, if(STATUS=0,'未启用',(if(STATUS=1,'正常运行',(if(STATUS=2,'传输中止','已停用'))))) as STATUS, STATUS as STATUS_NUM from POLICY_FLOW_RECOVERY_STRATEGY
+				union all 
+				select '','',0,CATALOGID,CLASSID,PRODUCTID,MODULEID,'','',CREATETIME,create_user,'系统自建' as CREATET_TYPE, STRATEGY_ID, 3 as STRATEGY_TYPE, '统计数据策略' as STRATEGY_TYPE_NAME, STRATEGY_NAME, CREATETIME as START_TIME, if(STATUS=0,'未启用',(if(STATUS=1,'正常运行',(if(STATUS=2,'传输中止','已停用'))))) as STATUS, STATUS as STATUS_NUM from POLICY_STAT_STRATEGY
+			) a left join (select STRATEGY_TYPE,STRATEGY_ID,sum(SUCCESS_FILE_NUM) SUCCESS_FILE_NUM,sum(FAIL_FILE_NUM) FAIL_FILE_NUM from POLICY_STATDATA group by STRATEGY_TYPE, STRATEGY_ID) b on a.STRATEGY_TYPE = b.STRATEGY_TYPE and a.STRATEGY_ID = b.STRATEGY_ID
+			<trim prefix="WHERE" prefixOverrides="AND">
+				<if test=" queryStartTime!= null and queryStartTime != '' ">
+					AND a.CREATETIME >= #{queryStartTime}
+				</if>
+				<if test=" queryEndTime != null and queryEndTime != '' ">
+					AND a.CREATETIME &lt;= #{queryEndTime}
+				</if>
+				<if test=" queryStrategyType != null and queryStrategyType > 0 ">
+					AND a.STRATEGY_TYPE = #{queryStrategyType}
+				</if>
+				<if test=" queryStatus != null and queryStatus >= 0 ">
+					AND a.STATUS_NUM = #{queryStatus}
+				</if>
+				<if test=" queryFTPServerId != null and queryFTPServerId > 0 ">
+					AND a.STRATEGY_ID in (select STRATEGY_ID from
+					POLICY_STRATEGY_FTP t1 left join POLICY_FTP_SERVER t2 on
+					t1.FTP_ID=t2.FTP_ID where
+					t2.FTP_ID=#{queryFTPServerId})
+				</if>
+				<if test=" queryStrategyId != null and queryStrategyId > 0 ">
+					AND a.STRATEGY_ID = #{queryStrategyId}
+				</if>
+			</trim>
+		) c
+	</select>
+	<select id="getPolicyStatData" resultType="java.util.HashMap">
+		SELECT * FROM POLICY_STATDATA where R_STATTIME>=ADDDATE(SYSDATE(),-1) and STRATEGY_TYPE=#{strategyType} and strategy_id=#{strategyId} order by R_STATTIME ASC
+	</select>
+	
+</mapper>

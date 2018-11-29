@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aotain.tdc.dao.sysconfig.ThresholdManagementDao">
+	<select id="getTableColumns" resultType="java.util.HashMap">
+		SELECT WEB_MODULE_QUOTA.MODULE_ID,
+		WEB_MODULE_QUOTA.QUOTA_ID,
+		WEB_MODULE_QUOTA.QUOTA_WEIGHT,
+		WEB_MODULE_QUOTA.QUOTA_FULL_POINT,
+		WEB_MODULE_QUOTA.QUOTA_GOOD_POINT,
+		WEB_MODULE_QUOTA.QUOTA_BASE_POINT,
+		WEB_MODULE_QUOTA.QUOTA_STEP,
+		WEB_MODULE_QUOTA.QUOTA_UNIT,
+		WEB_MODULE_QUOTA.QUOTA_NAME,
+		WEB_MODULE_QUOTA.QUOTA_ORDER
+		FROM WEB_MODULE_QUOTA
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="quotaName != null and quotaName != ''">
+				AND QUOTA_NAME like CONCAT('%', #{quotaName}, '%')
+			</if>
+		</trim>
+		<if test=" order != null and order != '' and sort != null and sort != '' ">
+			order by ${sort} ${order}
+		</if>
+		<if test="isPaging == 1">
+		LIMIT #{startRow}, #{endRow}
+		</if>
+	</select>
+	<select id="getTableColumnsTotalCounts" resultType="java.lang.Integer">
+		SELECT count(1) FROM WEB_MODULE_QUOTA
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="quotaName != null and quotaName != ''">
+				AND QUOTA_NAME like CONCAT('%', #{quotaName}, '%')
+			</if>
+		</trim>
+	</select>
+	<update id="update">
+		UPDATE WEB_MODULE_QUOTA
+		SET
+		QUOTA_WEIGHT = #{quotaWeight},
+		QUOTA_FULL_POINT = #{quotaFullPoint},
+		QUOTA_GOOD_POINT = #{quotaGoodPoint},
+		QUOTA_BASE_POINT = #{quotaBasePoint},
+		QUOTA_STEP = #{quotaStep}
+		WHERE QUOTA_ID = #{queryId}
+	</update>
+</mapper>

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aotain.tdc.dao.businessAnalysis.TopPageAnalysisDao" >
+<select id="getTableColumns" resultType ="java.util.HashMap">
+		SELECT
+		t1.PRODUCTID, t1.MODULEID, t1.PAGEID, t2.PAGE_NAME, t3.PAGE_URL, CONCAT(t1.PRODUCTID, '_', t1.MODULEID, '_', t1.PAGEID) AS PMPID,
+		SUM(t1.FLOW_UP)+SUM(t1.FLOW_DN) AS FLOW,
+		ROUND(IFNULL((SUM(t1.FLOW_UP)+SUM(t1.FLOW_DN)),0)*100/(SELECT IF((SUM(a1.FLOW_UP)+SUM(a1.FLOW_DN))=0 , 1, (SUM(a1.FLOW_UP)+SUM(a1.FLOW_DN))) FROM ${queryTableName} a1
+		LEFT JOIN DIC_PROTO_PAGE a2
+		ON a1.PRODUCTID = a2.PAGE_PRODUCTID AND a1.MODULEID = a2.PAGE_MODULEID AND a1.PAGEID = a2.PAGEID
+		LEFT JOIN DIC_PAGE_URL a3
+		ON a1.PAGEID = a3.PAGE_ID
+		 <trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND a1.R_STATTIME &gt; #{queryStartTime} AND a1.R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryProductId >= 0">
+				AND a1.PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId >= 0">
+				AND a1.MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryPageName != '' and queryPageName != null">
+				AND t2.PAGE_NAME LIKE CONCAT('%',#{queryPageName},'%')
+			</if>
+			<if test="queryUrl != '' and queryUrl != null">
+				AND t3.PAGE_URL LIKE CONCAT('%',#{queryUrl},'%')
+			</if>
+		</trim>
+		 ),2) AS FLOW_PRE,
+		SUM(t1.PAGE_VIEW) AS PAGE_VIEW,
+		ROUND(IFNULL(SUM(t1.PAGE_VIEW),0)*100/(SELECT IF(SUM(b1.PAGE_VIEW)=0 , 1, SUM(b1.PAGE_VIEW)) FROM ${queryTableName} b1
+		LEFT JOIN DIC_PROTO_PAGE b2
+		ON b1.PRODUCTID = b2.PAGE_PRODUCTID AND b1.MODULEID = b2.PAGE_MODULEID AND b1.PAGEID = b2.PAGEID
+		LEFT JOIN DIC_PAGE_URL b3
+		ON b1.PAGEID = b3.PAGE_ID
+		 <trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND b1.R_STATTIME &gt; #{queryStartTime} AND b1.R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryProductId >= 0">
+				AND b1.PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId >= 0">
+				AND b1.MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryPageName != '' and queryPageName != null">
+				AND b2.PAGE_NAME LIKE CONCAT('%',#{queryPageName},'%')
+			</if>
+			<if test="queryUrl != '' and queryUrl != null">
+				AND b3.PAGE_URL LIKE CONCAT('%',#{queryUrl},'%')
+			</if>
+		</trim>
+		 ),2) AS PAGE_VIEW_PRE,
+		ROUND(SUM(t1.SESSIONTIME)/1000/60/60,2) AS SESSIONTIME,
+		ROUND(IFNULL(SUM(t1.SESSIONTIME),0)*100/(SELECT IF(SUM(c1.SESSIONTIME)=0 , 1, SUM(c1.SESSIONTIME)) FROM ${queryTableName} c1
+		LEFT JOIN DIC_PROTO_PAGE c2
+		ON c1.PRODUCTID = c2.PAGE_PRODUCTID AND c1.MODULEID = c2.PAGE_MODULEID AND c1.PAGEID = c2.PAGEID
+		LEFT JOIN DIC_PAGE_URL c3
+		ON c1.PAGEID = c3.PAGE_ID
+		 <trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND c1.R_STATTIME &gt; #{queryStartTime} AND c1.R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryProductId >= 0">
+				AND c1.PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId >= 0">
+				AND c1.MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryPageName != '' and queryPageName != null">
+				AND c2.PAGE_NAME LIKE CONCAT('%',#{queryPageName},'%')
+			</if>
+			<if test="queryUrl != '' and queryUrl != null">
+				AND c3.PAGE_URL LIKE CONCAT('%',#{queryUrl},'%')
+			</if>
+		</trim>
+		 ),2) AS SESSIONTIME_PRE,
+		round(IFNULL(sum(t1.SUCCESSCONNECT_COUNT), 0) *100 / IF(sum(t1.CONNECT_COUNT)=0 || IF(sum(t1.CONNECT_COUNT) is null, true, false), 1, sum(t1.CONNECT_COUNT)), 2) AS SUCCESSCONNECT_RATE
+		FROM ${queryTableName} t1
+		LEFT JOIN DIC_PROTO_PAGE t2
+		ON t1.PRODUCTID = t2.PAGE_PRODUCTID AND t1.MODULEID = t2.PAGE_MODULEID AND t1.PAGEID = t2.PAGEID
+		LEFT JOIN DIC_PAGE_URL t3
+		ON t1.PAGEID = t3.PAGE_ID
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND t1.R_STATTIME &gt; #{queryStartTime} AND t1.R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryProductId >= 0">
+				AND t1.PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId >= 0">
+				AND t1.MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryPageName != '' and queryPageName != null">
+				AND t2.PAGE_NAME LIKE CONCAT('%',#{queryPageName},'%')
+			</if>
+			<if test="queryUrl != '' and queryUrl != null">
+				AND t3.PAGE_URL LIKE CONCAT('%',#{queryUrl},'%')
+			</if>
+		</trim>
+		GROUP BY PMPID
+		<if test=" order != null and order != '' and sort != null and sort != '' ">  
+			order by ${sort} ${order}
+		</if>
+		<if test="isPaging == 1 and endRow != 0" >
+			LIMIT #{startRow}, #{endRow}
+		</if>
+</select>
+
+<!-- <select id="getTableColumnsTotalCounts" resultType="java.lang.Integer">
+	SELECT COUNT(1) FROM
+	(SELECT PRODUCTID FROM ${queryTableName}
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryProductId >= 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId >= 0">
+				AND MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryPageName != '' and queryPageName != null">
+				AND PAGE_NAME LIKE CONCAT('%',#{queryPageName},'%')
+			</if>
+			<if test="queryUrl != '' and queryUrl != null">
+				AND PAGE_URL LIKE CONCAT('%',#{queryUrl},'%')
+			</if>
+		</trim>
+		GROUP BY PRODUCTID) t1
+</select> -->
+</mapper>

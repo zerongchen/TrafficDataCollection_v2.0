@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aotain.tdc.dao.serviceConfiguration.BizManageDao" >
+
+	<resultMap type="com.aotain.tdc.dto.common.DicBizInfo" id="bizInfoMap">
+		<result column="BIZ_ID" property="bizId" jdbcType="BIGINT" />
+		<result column="BIZ_NAME" property="bizName" jdbcType="VARCHAR" />
+		<result column="PARENT_ID" property="parentId" jdbcType="BIGINT" />		
+		<result column="DELETE_FLAG" property="deleteFlag" jdbcType="BIGINT" />
+		<result column="ORDER_ID" property="orderId" jdbcType="BIGINT" />
+		<result column="RESOURCE_MARK" property="resourcemark" jdbcType="BIGINT" />
+		<result column="SERVERBUILD_ROOM" property="serverbuildroom" jdbcType="VARCHAR" />		
+	</resultMap>
+	
+	<resultMap type="com.aotain.tdc.dto.common.DicBizConfig" id="bizConfigMap">
+		<result column="ID" property="id" jdbcType="BIGINT" />
+		<result column="BIZ_ID" property="bizId" jdbcType="BIGINT" />
+		<result column="CONF_TYPE" property="confType" jdbcType="BIGINT" />
+		<result column="IP" property="ip" jdbcType="VARCHAR" />
+		<result column="MASK" property="mask" jdbcType="BIGINT" />
+		<result column="PORT" property="port" jdbcType="BIGINT" />
+		<result column="URL" property="url" jdbcType="VARCHAR" />
+		<result column="RESOURCE_MA" property="resourceMa" jdbcType="BIGINT" />
+	</resultMap>
+	
+	<update id="updateBizParent">
+		UPDATE DIC_BIZ_INFO
+		SET
+		PARENT_ID = #{queryParentId}
+		WHERE BIZ_ID = #{queryBizID}
+	</update>
+	
+	<select id="IsexitBizInfo" resultType="int">
+		select count(1) from dic_biz_info where BIZ_NAME = #{bizName} 
+		    and RESOURCE_MARK = #{resourcemark}
+	</select>
+	
+	<insert id="insertBizInfo">
+		<selectKey keyProperty="bizId" resultType="java.lang.Integer" order="BEFORE">
+	    	SELECT MYCAT_SEQ_NEXTVAL('DIC_BIZ_INFO_ID')
+	  	</selectKey>
+	  	insert into dic_biz_info (
+			BIZ_ID,
+			BIZ_NAME,
+			PARENT_ID,
+			DELETE_FLAG,
+			ORDER_ID,
+			RESOURCE_MARK,
+			SERVERBUILD_ROOM
+	  	) values (
+	  		#{bizId},
+	  		#{bizName},
+	  		#{parentId},	  		
+	  		#{deleteFlag},
+	  		#{orderId},
+	  		#{resourcemark},
+	  		#{serverbuildroom}
+	  	)
+	</insert>
+	
+	<select id="IsexitBizconfig" resultType="int">
+		select count(1) from dic_biz_config 
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+		and CONF_TYPE = #{bizconfig.confType}
+		and RESOURCE_MA = #{bizconfig.resourceMa}
+		<if test="bizconfig.confType == 1 or bizconfig.confType == 2">  
+			and IP= #{bizconfig.ip} 
+		</if>
+		<if test="bizconfig.confType == 3 ">  
+			and IP= #{bizconfig.ip} 
+			and PORT = #{bizconfig.port}
+		</if>
+		<if test="bizconfig.confType == 4 ">  
+			and IP= #{bizconfig.ip} 
+			and PORT = #{bizconfig.port}
+			and URL = #{bizconfig.url}
+		</if>
+		 <!-- and IP= #{bizconfig.ip} and RESOURCE_MA = #{bizconfig.resourceMa} and PORT = #{bizconfig.port} -->
+	</trim>
+		
+		
+		<!-- where CONF_TYPE = #{bizconfig.confType}
+		 and IP= #{bizconfig.ip} and RESOURCE_MA = #{bizconfig.resourceMa} and PORT = #{bizconfig.port} -->
+	</select>	
+	<insert id="insertBizconfig">
+		<selectKey keyProperty="id" resultType="java.lang.Integer" order="BEFORE">
+	    	SELECT MYCAT_SEQ_NEXTVAL('DIC_BIZ_CONFIG_ID')
+	  	</selectKey>
+	  	insert into dic_biz_config (
+	  		ID,
+			BIZ_ID,
+			CONF_TYPE,
+			IP,
+			MASK,
+			PORT,
+			URL,
+			RESOURCE_MA
+	  	) values (
+	  		#{id},
+	  		#{bizId},
+	  		#{bizconfig.confType},
+	  		#{bizconfig.ip},
+	  		#{bizconfig.mask},
+	  		#{bizconfig.port},
+	  		#{bizconfig.url},
+	  		#{bizconfig.resourceMa}
+	  	)
+	</insert>
+	
+	<delete id="delSubConfig">
+		delete from dic_biz_config where biz_id in ( select biz_id from dic_biz_info where PARENT_ID = #{bizId} )
+	</delete>
+	<delete id="delSubInfo">
+		update  dic_biz_info set DELETE_FLAG = 1 where PARENT_ID = #{bizId}
+	</delete>
+	<delete id="delConfig">
+		delete from dic_biz_config where biz_id = #{bizId}
+	</delete>
+	<delete id="delConfigById">
+		delete from dic_biz_config where id = #{id}
+	</delete>
+	<delete id="delInfo">
+		update  dic_biz_info set DELETE_FLAG = 1 where biz_id = #{bizId}
+	</delete>
+	
+	<select id="getBizInfo" resultMap="bizInfoMap">
+		select BIZ_ID, BIZ_NAME, PARENT_ID, DELETE_FLAG, ORDER_ID,RESOURCE_MARK,SERVERBUILD_ROOM from dic_biz_info where BIZ_ID = #{bizId} and DELETE_FLAG != 1 limit 1
+	</select>
+	
+	<select id="getBizConfigs" resultMap="bizConfigMap">
+		select * from dic_biz_config where BIZ_ID = #{bizId}
+	</select>
+	<update id="updateBizInfo">
+		update dic_biz_info
+			set 
+		BIZ_NAME = #{bizName},
+		PARENT_ID = #{parentId}
+		where BIZ_ID = #{bizId}
+	</update>
+	<update id="updateBizConfig">
+		update dic_biz_config
+			set 
+		IP = #{ip},
+		MASK = #{mask},
+		PORT = #{port},
+		URL = #{url}
+		where ID = #{id}
+	</update>
+</mapper>

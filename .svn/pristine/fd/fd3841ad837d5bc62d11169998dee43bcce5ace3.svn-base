@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aotain.tdc.dao.quality.ErrorCodeDao">
+<select id="getTableColumns" resultType ="java.util.HashMap">
+		SELECT PROTOCOL_ID, ERRORCODE, 
+		(SELECT SUM(ERRORCODE_COUNT) FROM ${queryTableName}
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<!-- <if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId > 0">//
+				AND MODULEID = #{queryModuleId}
+			</if> -->
+			<if test="queryBizIdStr != null and queryBizIdStr !='' and queryBizIdStr !='-1'" >
+				AND BIZ_ID  in ( #{queryBizIdStr} )
+			</if>			
+			<!-- <if test="queryPageId > 0">
+				AND PAGEID = #{queryPageId}
+			</if> -->
+		</trim>
+		
+		) AS ERRORCODE_COUNT_ALL,
+		SUM(ERRORCODE_COUNT) AS ERRORCODE_COUNT,
+		SUM(ERRORCODE_COUNT) AS ERRORCODE_COUNT_PRE,
+		(SELECT COUNT(DISTINCT R_STATTIME) FROM ${queryTableName} T2
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			AND T2.ERRORCODE = T1.ERRORCODE AND T2.PROTOCOL_ID = T1.PROTOCOL_ID
+			<if test="isQueryDateTime == 1">  
+				AND R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<!--<if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId > 0">
+				AND MODULEID = #{queryModuleId}
+			</if>-->
+			<if test="queryBizIdStr != null and queryBizIdStr !='' and queryBizIdStr !='-1'" >
+				AND BIZ_ID in (#{queryBizIdStr} )
+			</if>
+			<!-- <if test="queryPageId > 0">
+				AND PAGEID = #{queryPageId}
+			</if> -->
+		</trim>
+		
+		) AS COUNTNUM FROM ${queryTableName}   T1
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<!--<if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId > 0">
+				AND MODULEID = #{queryModuleId}
+			</if>-->
+			<if test="queryBizIdStr != null and queryBizIdStr !='' and queryBizIdStr !='-1'" >
+				AND BIZ_ID in ( #{queryBizIdStr} )
+			</if>
+			<!-- <if test="queryPageId > 0">
+				AND PAGEID = #{queryPageId}
+			</if> -->
+		</trim>
+		GROUP BY PROTOCOL_ID,ERRORCODE 
+		<if test=" order != null and order != '' and sort != null and sort != '' ">  
+			order by ${sort} ${order}
+		</if>
+		<if test="isPaging == 1">
+			LIMIT #{startRow}, #{endRow}
+		</if>
+	</select>
+	<select id="getTableColumnsTotalCounts" resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM (SELECT PROTOCOL_ID, ERRORCODE,COUNT(*) AS COUNTNUM FROM ${queryTableName}  
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<!-- <if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId > 0">
+				AND MODULEID = #{queryModuleId}
+			</if>-->
+			<if test="queryBizIdStr != null and queryBizIdStr !='' and queryBizIdStr !='-1'" >
+				AND BIZ_ID in ( #{queryBizIdStr} )
+			</if>
+			<!-- <if test="queryPageId > 0">
+				AND PAGEID = #{queryPageId}
+			</if> -->
+		</trim>
+		GROUP BY PROTOCOL_ID, ERRORCODE) T1
+	</select>
+	<select id="getTimeParticleList" resultType ="java.util.HashMap">
+		SELECT R_STATTIME FROM  ${queryTableName}   
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<!-- <if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId > 0">
+				AND MODULEID = #{queryModuleId}
+			</if>
+			-->
+			<if test="queryBizIdStr != null and queryBizIdStr !='' and queryBizIdStr !='-1'" >
+				AND BIZ_ID in ( #{queryBizIdStr} )
+			</if>
+			<!-- <if test="queryPageId > 0">
+				AND PAGEID = #{queryPageId}
+			</if> -->
+			<if test="queryProtocolId > 0">
+				AND PROTOCOL_ID = #{queryProtocolId}
+			</if>
+			<if test="queryErrorCode != null and queryErrorCode != '' ">  
+				AND ERRORCODE in (${queryErrorCode})
+			</if>
+		</trim>
+		ORDER BY R_STATTIME ASC
+	</select>
+	<select id="getFlowTrendByIdList" resultType ="java.util.HashMap">
+		SELECT R_STATTIME ,ERRORCODE_COUNT FROM  ${queryTableName}   
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<!-- 
+			<if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId > 0">
+				AND MODULEID = #{queryModuleId}
+			</if>
+			-->
+			<if test="queryBizIdStr != null and queryBizIdStr !='' and queryBizIdStr !='-1'" >
+				AND BIZ_ID in ( #{queryBizIdStr} )
+			</if>
+			<!-- <if test="queryPageId > 0">
+				AND PAGEID = #{queryPageId}
+			</if> -->
+			<if test="queryProtocolId > 0">
+				AND PROTOCOL_ID = #{queryProtocolId}
+			</if>
+			<if test="queryErrorCode != null and queryErrorCode != '' ">  
+				AND ERRORCODE in (${queryErrorCode})
+			</if>
+		</trim>
+	</select>
+</mapper>

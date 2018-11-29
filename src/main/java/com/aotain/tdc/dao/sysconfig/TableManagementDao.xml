@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aotain.tdc.dao.sysconfig.TableManagementDao">
+	<select id="getTableColumns" resultType ="java.util.HashMap">
+		SELECT DICT_ID, TABLE_NAME, COLUMN_VALUE, COLUMN_TEXT, COLUMN_ORDER, COLUMN_TYPE, IF(COLUMN_TYPE=1,'显示','不显示') as COLUMN_TYPE_STR, ORDER_TYPE, MODIFY_TIME, date_format(MODIFY_TIME,'%Y-%m-%d %H:%i:%s') as MODIFY_TIME_STR, COLUMN_UNIT, SWITCHABLE, IF(SWITCHABLE=1,'参与','不参与') as SWITCHABLE_STR FROM DIC_TABLECOLUMN 
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="queryTableName != null and queryTableName!=''">
+			AND TABLE_NAME = #{queryTableName}
+			</if>
+		</trim>
+		order by COLUMN_ORDER ASC
+		<if test="isPaging == 1">
+		LIMIT #{startRow}, #{endRow}
+		</if>
+	</select>
+	<select id="getTableColumnsTotalCounts" resultType="java.lang.Integer">
+		SELECT count(1) FROM DIC_TABLECOLUMN 
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="queryTableName != null and queryTableName!=''">
+			AND TABLE_NAME = #{queryTableName}
+			</if>
+		</trim>
+	</select>
+	<update id="update">
+		UPDATE DIC_TABLECOLUMN
+		SET
+		COLUMN_TYPE = #{queryColumnType},
+		SWITCHABLE = #{querySwitchable}
+		WHERE DICT_ID = #{queryId}
+	</update>
+	<select id="selectIdByColumnOder" resultType="java.lang.Integer">
+		SELECT DICT_ID from DIC_TABLECOLUMN where COLUMN_ORDER = #{queryColumnOrder}  AND TABLE_NAME=#{queryTableName} limit 1
+	</select>
+	<update id="updateUp">
+		UPDATE DIC_TABLECOLUMN SET COLUMN_ORDER = #{queryColumnOrder} WHERE DICT_ID = #{id};
+		UPDATE DIC_TABLECOLUMN SET COLUMN_ORDER = #{queryColumnOrder}-1 WHERE DICT_ID = #{queryId}
+	</update>
+	<update id="updateDown">
+		UPDATE DIC_TABLECOLUMN SET COLUMN_ORDER = #{queryColumnOrder} WHERE DICT_ID = #{id};
+		UPDATE DIC_TABLECOLUMN SET COLUMN_ORDER = #{queryColumnOrder}+1 WHERE DICT_ID = #{queryId}
+	</update>
+	<select id ="selectTableNames" resultType="java.util.HashMap">
+		SELECT DISTINCT TABLE_NAME from dic_tablecolumn
+	</select>
+</mapper>

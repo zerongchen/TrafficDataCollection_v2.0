@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<privilege>
+	<UserAction>
+		<action>operator_source_query</action>
+		<action>areaoperator_source_query</action>
+		<action>business_direction_query</action>
+		<action>resources_pool_query</action>
+		<action>room_traffic_query</action>
+		<action>ip_address_query</action>
+		<action>protocol_traffic_query</action>
+		<action>welcome</action>
+		<action>profile_query</action>
+		<action>area_source_query</action>
+	</UserAction>
+	<UserMenu>
+		<mi menuitemname='地域来源' menuitemtype='1'></mi>
+		<mi menuitemname='流量分析-总览概况' menuitemtype='0'></mi>
+		<mi menuitemname='机房流量' menuitemtype='1'></mi>
+		<mi menuitemname='流量分析-流向分析' menuitemtype='0'></mi>
+		<mi menuitemname='welcome' menuitemtype='1'></mi>
+		<mi menuitemname='运营商来源' menuitemtype='1'></mi>
+		<mi menuitemname='地域运营商来源' menuitemtype='1'></mi>
+		<mi menuitemname='基地资源池' menuitemtype='1'></mi>
+		<mi menuitemname='流量总览概况' menuitemtype='0'></mi>
+		<mi menuitemname='协议流量' menuitemtype='1'></mi>
+		<mi menuitemname='流量分析-流量监控' menuitemtype='0'></mi>
+		<mi menuitemname='业务流向' menuitemtype='0'></mi>
+		<mi menuitemname='IP地址' menuitemtype='1'></mi>
+		<mi menuitemname='流量分析-资源池分析' menuitemtype='0'></mi>
+	</UserMenu>
+</privilege>

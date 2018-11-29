@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aotain.tdc.dao.serviceConfiguration.BusinessInformationDao" >
+	<!-- 
+	<select id="getTableColumns" resultType ="java.util.HashMap">
+		SELECT ID, BIZ_ID, BIZ_NAME, PARENT_ID, SERVERBUILD_ID, SERVERROOM_ID, ORDER_ID, group_concat( if(CONF_TYPE=1,'IP段',if(CONF_TYPE=2, 'IP', if(CONF_TYPE=3, 'IP端口', if(CONF_TYPE=4,'URL','未知')))) ) CONF_TYPE_NAME, group_concat(CONF_TYPE) CONF_TYPE, group_concat(IPSEGMENT) IPSEGMENT, group_concat(IP) IP, group_concat(IPPORT) IPPORT, group_concat(URL) URL from (SELECT T2.ID, T2.CONF_TYPE, T1.BIZ_ID,T1.BIZ_NAME,T1.PARENT_ID,T1.serverbuild_id,T1.SERVERROOM_ID,ORDER_ID
+			, if(T2.conf_type=1,CONCAT(T2.IP,'/',T2.mask), null) as ipsegment
+			, if(T2.conf_type=2,T2.IP, null) as IP
+			, if(T2.conf_type=3,CONCAT(T2.IP,':',T2.port), null) as ipport
+			, if(T2.conf_type=4,T2.URL, null) as url
+		FROM DIC_BIZ_INFO T1 left join DIC_BIZ_CONFIG T2 on T1.biz_id = T2.biz_id
+			<trim prefix="WHERE" prefixOverrides="AND |OR ">
+					AND IFNULL(T1.DELETE_FLAG,0)!=1
+				<if test="queryId > 0">
+					AND T1.BIZ_ID = #{queryId}
+				</if>
+			</trim>
+		) T3 group by BIZ_ID
+		<if test=" order != null and order != '' and sort != null and sort != '' ">  
+			order by ${sort} ${order}
+		</if>
+		<if test="isPaging == 1">
+			LIMIT #{startRow}, #{endRow}
+		</if>
+	</select> -->
+	<select id="getTableColumns" resultType ="java.util.HashMap">
+		SELECT BIZ_ID, BIZ_NAME, PARENT_ID,  ORDER_ID, DELETE_FLAG,SERVERBUILD_ROOM SERVERROOM,RESOURCE_MARK from dic_biz_info
+		where RESOURCE_MARK =  #{queryResourceMark}
+		<if test=" order != null and order != '' and sort != null and sort != '' ">  
+			order by ${sort} ${order}
+		</if>
+		<if test="isPaging == 1">
+			LIMIT #{startRow}, #{endRow}
+		</if>
+	</select> 
+	
+	<select id="getTableColumnsTotalCounts" resultType="java.lang.Integer">
+		SELECT COUNT(1) FROM (
+			SELECT ID, BIZ_ID, BIZ_NAME, PARENT_ID,  ORDER_ID,SERVERBUILD_ROOM SERVERROOM, group_concat(IPSEGMENT), group_concat(IP), 
+			group_concat(IPPORT), group_concat(URL) from (
+			SELECT T2.ID, T1.BIZ_ID,T1.BIZ_NAME,T1.PARENT_ID,ORDER_ID,SERVERBUILD_ROOM
+				, if(T2.conf_type=1,CONCAT(T2.IP,'/',T2.mask), null) as ipsegment
+				, if(T2.conf_type=2,T2.IP, null) as IP
+				, if(T2.conf_type=3,CONCAT(T2.IP,':',T2.port), null) as ipport
+				, if(T2.conf_type=4,T2.URL, null) as url
+			FROM DIC_BIZ_INFO T1 left join DIC_BIZ_CONFIG T2 on T1.biz_id = T2.biz_id
+				<trim prefix="WHERE" prefixOverrides="AND |OR ">
+						AND IFNULL(T1.DELETE_FLAG,0)!=1 AND RESOURCE_MARK =  #{queryResourceMark}
+					<if test="queryId > 0">
+						AND T1.BIZ_ID = #{queryId}
+					</if>
+				</trim>
+			) T3 group by BIZ_ID 
+		) T4
+	</select>
+	
+	<select id="getroomColumns" resultType ="java.util.HashMap">
+	    SELECT  SERVERROOM_ID,a.SERVERBUILD_ID,SERVERROOM_NAME,SERVERBUILD_NAME from dic_serverroom a
+        left join dic_serverbuild b on a.SERVERBUILD_ID = b.SERVERBUILD_ID
+		<if test=" order != null and order != '' and sort != null and sort != '' ">  
+			order by ${sort} ${order}
+		</if>
+		<if test="isPaging == 1">
+			LIMIT #{startRow}, #{endRow}
+		</if>
+	</select> 
+	
+	<select id="getroomColumnsTotalCounts" resultType="java.lang.Integer">
+		SELECT COUNT(1) FROM (
+			SELECT  SERVERROOM_ID,a.SERVERBUILD_ID,SERVERROOM_NAME,SERVERBUILD_NAME from dic_serverroom a
+            left join dic_serverbuild b on a.SERVERBUILD_ID = b.SERVERBUILD_ID) aa
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO WEB_SERVICEINFO
+		(
+		ID, 
+		CATALOGID, CLASSID, PRODUCTID, MODULEID, 
+		SERVERBUILD_ID, SERVERROOM_ID,RESOURCE_MARK
+		<if test="queryDestIp != null and queryDestIp != '' ">
+		,DEST_IP
+		</if>
+		<if test="queryDestPort != null and queryDestPort != '' ">
+		,DESC_PORT
+		</if>
+		)
+		VALUES
+		(
+		#{queryServiceInfoId},
+		#{queryCatalogId},#{queryClassId},#{queryProductId},#{queryModuleId},
+		#{queryServerBuildId},#{queryServerRoomId},#{queryResourceMark}
+		<if test="queryDestIp != null and queryDestIp != '' ">
+		, #{queryDestIp}
+		</if>
+		<if test="queryDestPort != null and queryDestPort != '' ">
+		, ${queryDestPort}
+		</if>
+		)
+	</insert>
+	
+	<insert id="insertIpMapping">
+		INSERT INTO DIC_IPMAPPING 
+		(
+		IPMAPPING_ID, SERVICEINFO_ID, 
+		PAGEID, MODULEID, PRODUCTID, 
+		CLASSID, CATALOGID, SERVERBUILD_ID, 
+		SERVERROOM_ID, RESOURCE_MARK
+		) 
+		VALUES 
+		(
+		#{queryIpMappingId}, #{queryServiceInfoId}, 
+		0, #{queryModuleId}, #{queryProductId}, 
+		#{queryClassId}, #{queryCatalogId}, #{queryServerBuildId}, 
+		#{queryServerRoomId}, #{queryResourceMark}
+		)
+	</insert>
+	
+	<insert id="insertIpPort">
+		INSERT INTO DIC_IPPORT 
+		(
+		IPPORT_ID,IPMAPPING_ID,SERVICEINFO_ID,
+		START_IP, END_IP, 
+		START_PORT, END_PORT
+		) 
+		VALUES 
+		(
+		#{queryIpPortId},#{queryIpMappingId},#{queryServiceInfoId},
+		#{queryStartIp}, #{queryEndIp},
+		#{queryStartPort}, #{queryEndPort}
+		)
+	</insert>
+	
+	<delete id="delete">
+		DELETE FROM WEB_SERVICEINFO
+		WHERE ID IN (${queryIds})
+	</delete>
+	
+	<delete id="deleteIpMapping">
+		DELETE FROM DIC_IPMAPPING
+		WHERE SERVICEINFO_ID IN (${queryIds})
+	</delete>
+	
+	<delete id="deleteIpPort">
+		DELETE FROM DIC_IPPORT
+		WHERE IPPORT_ID IN (${queryIpPortIds})
+	</delete>
+	
+	<update id="update">
+		UPDATE WEB_SERVICEINFO
+		SET
+		CATALOGID = #{queryCatalogId},
+		CLASSID = #{queryClassId},
+		PRODUCTID = #{queryProductId},
+		MODULEID = #{queryModuleId},
+		SERVERBUILD_ID = #{queryServerBuildId},
+		SERVERROOM_ID = #{queryServerRoomId}
+		WHERE ID = #{queryServiceInfoId}
+	</update>
+	
+	<update id="updateIpMapping">
+		UPDATE DIC_IPMAPPING
+		SET
+		CATALOGID = #{queryCatalogId},
+		CLASSID = #{queryClassId},
+		PRODUCTID = #{queryProductId},
+		MODULEID = #{queryModuleId},
+		SERVERBUILD_ID = #{queryServerBuildId},
+		SERVERROOM_ID = #{queryServerRoomId}
+		WHERE IPMAPPING_ID = #{queryIpMappingId}
+		AND SERVICEINFO_ID = #{queryServiceInfoId}
+	</update>
+	
+	
+	<update id="updateIpPort">
+		UPDATE DIC_IPPORT
+		SET
+		START_IP = #{queryStartIp},
+		END_IP = #{queryEndIp},
+		START_PORT = #{queryStartPort},
+		END_PORT = #{queryEndPort}
+		WHERE IPMAPPING_ID = #{queryIpMappingId}
+		AND IPPORT_ID = #{queryIpPortId}
+		AND SERVICEINFO_ID = #{queryServiceInfoId}
+	</update>
+	
+	
+	<select id="getIpPortCounts" parameterType="string" resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM DIC_IPPORT 
+		WHERE SERVICEINFO_ID = #{id}
+	</select>
+	
+</mapper>

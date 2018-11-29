@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aotain.tdc.dao.businessAnalysis.RegionProductAnalysisDao" >
+<select id="getTableColumns" resultType ="java.util.HashMap">
+		SELECT  
+		PROVINCE_ID,
+		ROUND(IFNULL((SUM(FLOW_UP)+SUM(FLOW_DN))/(SELECT SUM(FLOW_UP)+ SUM(FLOW_DN) FROM ${queryTableName}
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId > 0">
+				AND MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryPosition != null and queryPosition != '' ">  
+				AND PROVINCE_ID in (${queryPosition})
+			</if>
+		</trim>
+		)*100,0),2) AS FLOW_PRE,
+		ROUND((SUM(FLOW_UP)+SUM(FLOW_DN))/1024/1024/1024,2) AS FLOW,
+		ROUND(SUM(PAGE_VIEW)/10000,4) AS PAGE_VIEW,
+		ROUND(IFNULL((SUM(PAGE_VIEW)/(SELECT SUM(PAGE_VIEW) FROM ${queryTableName} 
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId > 0">
+				AND MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryPosition != null and queryPosition != '' ">  
+				AND PROVINCE_ID in (${queryPosition})
+			</if>
+		</trim>
+		)*100),0),2) AS PAGE_VIEW_PRE,
+		ROUND(SUM(SESSIONTIME)/1000/60/60,2) AS PAGE_TIME,
+		ROUND(IFNULL((SUM(SESSIONTIME)/(SELECT SUM(SESSIONTIME) FROM ${queryTableName} 
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId > 0">
+				AND MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryPosition != null and queryPosition != '' ">  
+				AND PROVINCE_ID in (${queryPosition})
+			</if>
+		</trim>
+		)*100),0),2) AS PAGE_TIME_PRE,
+		ROUND(IFNULL(SUM(SUCCESSCONNECT_COUNT)/SUM(CONNECT_COUNT),0)*100,2) AS  SUCCESSCONNECT_PRE
+		FROM ${queryTableName} 
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId > 0">
+				AND MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryPosition != null and queryPosition != '' ">  
+				AND PROVINCE_ID in (${queryPosition})
+			</if>
+		</trim>
+		GROUP BY PROVINCE_ID
+		 
+		<if test=" order != null and order != '' and sort != null and sort != '' ">  
+			order by ${sort} ${order}
+		</if>
+		<if test="isPaging == 1">
+			LIMIT #{startRow}, #{endRow}
+		</if>
+	</select>
+	
+</mapper>

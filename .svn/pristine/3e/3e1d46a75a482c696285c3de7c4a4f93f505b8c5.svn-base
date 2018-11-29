@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aotain.tdc.dao.quartz.SendZabbixDao">
+	<select id="getTableColumns" resultType ="java.util.HashMap">
+		SELECT '${queryHostName}' AS HOSTNAME,
+		BIZ_ID,UNIX_TIMESTAMP(R_STATTIME) as R_STATTIME,
+		SUM(FLOW_DN) AS FLOW_DN,
+		SUM(FLOW_UP) AS FLOW_UP
+		FROM REPORT_BIZ_FLOW_MIN 
+	<trim prefix="WHERE" prefixOverrides="AND |OR ">
+		AND R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+		<if test="queryBizIdStr != null and queryBizIdStr != ''">  
+			AND BIZ_ID in (${queryBizIdStr})
+		</if>
+	</trim>
+	GROUP BY BIZ_ID
+	</select>
+	<select id="getTableColumnsTotalCounts" resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM (SELECT 'ZYC2-SJFX-LLCJJK-WEB01' AS HOSTNAME,
+		BIZ_ID,UNIX_TIMESTAMP(R_STATTIME) as R_STATTIME,
+		FLOW_DN+FLOW_UP AS FLOW 
+		FROM REPORT_BIZ_FLOW_MIN 
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			AND R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			<if test="queryBizIdStr != null and queryBizIdStr != ''">  
+				AND BIZ_ID in (${queryBizIdStr})
+			</if>
+		</trim>
+		GROUP BY BIZ_ID
+		) T1
+	</select>
+</mapper>
+

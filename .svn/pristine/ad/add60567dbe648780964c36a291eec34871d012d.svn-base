@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aotain.tdc.dao.common.UserColumnDao">
+	<select id="validateRepeat" parameterType="com.aotain.tdc.dto.common.UserColumnDTO"
+		resultType="int">
+		select count(1) from WEB_COLUMNUSER
+		where DICT_ID = #{dictId,jdbcType=DECIMAL}
+		and ADMIN_OPER = #{operID,jdbcType=DECIMAL}
+	</select>
+
+	<insert id="insertUserColumnData" parameterType="com.aotain.tdc.dto.common.UserColumnDTO">
+		insert into WEB_COLUMNUSER (ADMIN_OPER, DICT_ID,
+		COLUMN_TYPE,MODIFY_TIME)
+		values (#{operID,jdbcType=DECIMAL}, #{dictId,jdbcType=DECIMAL},
+		#{tag,jdbcType=VARCHAR},sysdate())
+	</insert>
+
+	<update id="updateColumnUser" parameterType="com.aotain.tdc.dto.common.UserColumnDTO">
+		update WEB_COLUMNUSER
+		<set>
+			<if test="tag != null">
+				COLUMN_TYPE =#{tag,jdbcType=DECIMAL},
+			</if>
+			MODIFY_TIME = sysdate()
+		</set>
+		where DICT_ID = #{dictId,jdbcType=DECIMAL}
+		and ADMIN_OPER = #{operID,jdbcType=DECIMAL}
+	</update>
+</mapper>

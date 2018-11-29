@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace = "com.aotain.tdc.dao.strategy.TrafficStatStrategyManagementDao">
+<select id="getTableColumnsData" resultType = "java.util.HashMap">
+	SELECT t1.STRATEGY_ID, DATE_FORMAT(t1.CREATETIME,'%Y-%m-%d %H:%i:%s') as CREATETIME, t1.CREATE_USER, t1.STRATEGY_NAME,
+		  t1.FTP_ID,t2.FTP_NAME,
+		   CASE t1.STATUS
+			 WHEN 0 THEN '未启用'
+			 WHEN 1 THEN '正常运行'
+			 WHEN 2 THEN '传输终止'
+			 WHEN 3 THEN '已停用'
+		   END
+		   AS STATUS,
+		   CASE t1.REPORT_TYPE 
+			 WHEN 1 THEN '流量流向统计数据'
+			 WHEN 2 THEN '流量监测统计数据'
+			 WHEN 3 THEN '用户感知分析数据'
+			 WHEN 4 THEN '业务引用分析数据' 
+			END AS REPORT_TYPE,
+			 CASE t1.CREATE_TYPE 
+			 WHEN 0 THEN '系统自建'
+			 WHEN 1 THEN '接口调用' 
+			END AS CREATE_TYPE
+	FROM POLICY_STAT_STRATEGY t1 
+	LEFT JOIN POLICY_FTP_SERVER t2 ON t1.FTP_ID = t2.FTP_ID
+	 <trim prefix="WHERE" prefixOverrides="AND |OR ">
+		<if test=" queryStartTime != null and queryStartTime !='' ">
+			AND t1.CREATETIME &gt; #{queryStartTime}
+		</if>
+		<if test=" queryEndTime != null and queryEndTime !='' ">
+			AND t1.CREATETIME &lt;= #{queryEndTime}
+		</if>
+		<if test="queryStrategyId > 0 ">
+			AND t1.STRATEGY_ID = #{queryStrategyId}
+		</if>
+		<if test="queryFTPServerId > 0 ">
+			AND t1.FTP_ID = #{queryFTPServerId}
+		</if>
+		<if test="queryStatus >= 0 ">
+			AND STATUS = #{queryStatus}
+		</if>
+		<if test="queryReportType >= 0 ">
+			AND REPORT_TYPE = #{queryReportType}
+		</if>
+	 </trim>
+		<if test=" order != null and order != '' and sort != null and sort != '' ">
+		ORDER BY ${sort} ${order}
+		</if>
+		<if test="isPaging == 1">
+		LIMIT #{startRow}, #{endRow}
+		</if>
+</select>
+
+<select id="getTableColumnsDataTotalCounts" resultType = "java.lang.Integer">
+	SELECT count(1)
+	FROM POLICY_STAT_STRATEGY t1
+	<trim prefix="WHERE" prefixOverrides="AND |OR ">
+		<if test=" queryStartTime != null and queryStartTime !='' ">
+			AND CREATETIME &gt; #{queryStartTime}
+		</if>
+		<if test=" queryEndTime != null and queryEndTime !='' ">
+			AND CREATETIME &lt;= #{queryEndTime}
+		</if>
+		<if test="queryStrategyId > 0 ">
+			AND t1.STRATEGY_ID = #{queryStrategyId}
+		</if>
+		<if test="queryFTPServerId > 0 ">
+			AND t1.FTP_ID = #{queryFTPServerId})
+		</if>
+		<if test="queryStatus >= 0 ">
+			AND STATUS = #{queryStatus}
+		</if>
+	</trim>
+</select>
+<insert id="insert">
+		<selectKey keyProperty="queryStrategyId" resultType="java.lang.String" order="BEFORE">
+	    	SELECT MYCAT_SEQ_NEXTVAL('POLICY_STAT_STRATEGY')
+	  	</selectKey>
+	INSERT INTO POLICY_STAT_STRATEGY
+	(
+	STRATEGY_ID,
+	STRATEGY_NAME,
+	CREATE_TYPE,
+	CATALOGID,
+	CLASSID,
+	PRODUCTID,
+	MODULEID,
+	REPORT_TYPE,
+	STATUS,
+	FTP_ID,
+	CREATETIME,
+	CREATE_USER
+	)
+	VALUES
+	(
+	${queryStrategyId},
+	#{queryStrategyName},
+	0,
+	IFNULL(#{queryCatalogId}, 0),
+	IFNULL(#{queryClassId}, 0),
+	IFNULL(#{queryProductId}, 0),
+	IFNULL(#{queryModuleId}, 0),
+	#{queryReportType},
+	IFNULL(#{queryStatus}, 0),
+	#{queryFTPServerId},
+	SYSDATE(),
+	IFNULL(#{queryCreateUser}, '')
+	)
+</insert>
+<update id="update">
+	UPDATE POLICY_STAT_STRATEGY
+	<trim prefix="SET" suffixOverrides=",">
+		<if test="queryStrategyName != null and queryStrategyName != ''">
+			STRATEGY_NAME = #{queryStrategyName},
+		</if>
+			STATUS = IFNULL(#{queryStatus},0),
+			FTP_ID = #{queryFTPServerId},
+			REPORT_TYPE = #{queryReportType}
+	</trim>
+		WHERE STRATEGY_ID = #{queryStrategyId}
+</update>
+<delete id="delete">
+	DELETE FROM POLICY_STAT_STRATEGY
+	WHERE STRATEGY_ID in (${queryStrategyIds})
+</delete>
+<update id="updateStatus">
+	UPDATE POLICY_STAT_STRATEGY
+	SET
+		STATUS = #{queryStatus}
+		WHERE STRATEGY_ID = #{queryStrategyId}
+</update>
+</mapper>

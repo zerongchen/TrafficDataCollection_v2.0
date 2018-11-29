@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aotain.tdc.dao.traffic.ServiceTrafficDao">
+	<select id="getStatisticsTableColumns" resultType ="java.util.HashMap">
+		SELECT  t.CATALOGID, SUM(t.FLOW_UP) AS FLOW_UP,
+		SUM(t.FLOW_DN) AS FLOW_DN,(SUM(t.FLOW_UP)+SUM(t.FLOW_DN)) as FLOW,
+		(select count(DISTINCT t1.R_STATTIME) from ${queryTableName} t1
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND CATALOGID != 0
+				AND CATALOGID != 999
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId > 0">  
+				AND MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryPageId > 0 ">  
+				AND PAGEID = #{queryPageId}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryProvinceId > 0">
+				AND PROVINCE_ID = #{queryProvinceId}
+			</if>
+			AND t1.CATALOGID = t.CATALOGID
+		</trim>
+		) AS COUNTNUM,
+		ROUND(IFNULL((SUM(t.FLOW_UP)+ SUM(t.FLOW_DN))/(SELECT (SUM(t2.FLOW_UP)+ SUM(t2.FLOW_DN)) FROM ${queryTableName} t2
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+			AND CATALOGID != 0
+				AND CATALOGID != 999
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId > 0">  
+				AND MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryPageId > 0 ">  
+				AND PAGEID = #{queryPageId}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryProvinceId > 0">
+				AND PROVINCE_ID = #{queryProvinceId}
+			</if>
+		</trim>
+		)*100,0),2) AS FLOW_PRE
+		FROM ${queryTableName} t
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+			AND CATALOGID != 0
+				AND CATALOGID != 999
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId > 0">  
+				AND MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryPageId > 0 ">  
+				AND PAGEID = #{queryPageId}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryProvinceId > 0">
+				AND PROVINCE_ID = #{queryProvinceId}
+			</if>
+		</trim>
+			 GROUP BY CATALOGID 
+		<if test=" order != null and order != '' and sort != null and sort != '' ">  
+			order by ${sort} ${order}
+		</if>
+		<if test="isPaging == 1">
+			LIMIT #{startRow}, #{endRow}
+		</if>
+	</select>
+	
+	<select id="getStatisticsTableColumnsTotalCounts" resultType="java.lang.Integer">
+	select count(DISTINCT CATALOGID) AS COUNTNUM FROM ${queryTableName}  
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+			AND CATALOGID != 0
+				AND CATALOGID != 999
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId > 0">  
+				AND MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryPageId > 0 ">  
+				AND PAGEID = #{queryPageId}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryProvinceId > 0">
+				AND PROVINCE_ID = #{queryProvinceId}
+			</if>
+		</trim>
+	</select>
+	
+	<select id="getTableColumns" resultType ="java.util.HashMap">
+	SELECT  R_STATTIME, (SUM(FLOW_UP)+ SUM(FLOW_DN)) AS FLOW_ALL, SUM(FLOW_UP) AS FLOW_UP,
+		SUM(FLOW_DN) AS FLOW_DN,(SUM(FLOW_UP)+SUM(FLOW_DN)) as FLOW,
+		(select count(DISTINCT R_STATTIME) from ${queryTableName}
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+			AND CATALOGID != 0
+				AND CATALOGID != 999
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId > 0">  
+				AND MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryPageId > 0 ">  
+				AND PAGEID = #{queryPageId}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryProvinceId > 0">
+				AND PROVINCE_ID = #{queryProvinceId}
+			</if>
+		</trim>
+		) AS COUNTNUM
+		FROM ${queryTableName}
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+			AND CATALOGID != 0
+				AND CATALOGID != 999
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId > 0">  
+				AND MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryPageId > 0 ">  
+				AND PAGEID = #{queryPageId}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryProvinceId > 0">
+				AND PROVINCE_ID = #{queryProvinceId}
+			</if>
+		</trim>
+			 GROUP BY R_STATTIME
+
+	</select>
+	
+	<select id="getTableColumnsTotalCounts" resultType="java.lang.Integer">
+		select count(DISTINCT R_STATTIME) AS COUNTNUM FROM ${queryTableName}  
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+			AND CATALOGID != 0
+				AND CATALOGID != 999
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId > 0">  
+				AND MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryPageId > 0 ">  
+				AND PAGEID = #{queryPageId}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryProvinceId > 0">
+				AND PROVINCE_ID = #{queryProvinceId}
+			</if>
+		</trim>
+	</select>
+	
+	<select id="getLayerTrenTableColumns" resultType ="java.util.HashMap">
+		SELECT  t.CATALOGID, (SUM(t.FLOW_UP)+ SUM(t.FLOW_DN)) AS FLOW_ALL, SUM(t.FLOW_UP) AS FLOW_UP, t.R_STATTIME,
+		SUM(t.FLOW_DN) AS FLOW_DN,(SUM(t.FLOW_UP)+SUM(t.FLOW_DN)) as FLOW
+		FROM ${queryTableName} t
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+			AND CATALOGID != 0
+				AND CATALOGID != 999
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId > 0">  
+				AND MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryPageId > 0 ">  
+				AND PAGEID = #{queryPageId}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryProvinceId > 0">
+				AND PROVINCE_ID = #{queryProvinceId}
+			</if>
+		</trim>
+			 GROUP BY R_STATTIME 
+
+	</select>
+	<select id="getLayerTrendTableColumnsTotalCounts" resultType="java.lang.Integer">
+		select count(DISTINCT R_STATTIME) AS COUNTNUM FROM ${queryTableName}  
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+			AND CATALOGID != 0
+				AND CATALOGID != 999
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId > 0">  
+				AND MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryPageId > 0 ">  
+				AND PAGEID = #{queryPageId}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryProvinceId > 0">
+				AND PROVINCE_ID = #{queryProvinceId}
+			</if>
+		</trim>
+		</select>
+</mapper>
+

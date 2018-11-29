@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aotain.tdc.dao.serviceConfiguration.ServiceArchitectureDao" >
+	<insert id="insertCatalog">
+		<selectKey keyProperty="queryCatalogId" resultType="java.lang.Long" order="BEFORE">
+	    	<!-- SELECT NEXT VALUE FOR MYCATSEQ_DIC_PROTO_CATALOG -->
+	    	select MYCAT_SEQ_NEXTVAL('DIC_PROTO_CATALOG')
+	  	</selectKey>
+		INSERT INTO DIC_PROTO_CATALOG
+		(
+		CATALOGID, 
+		CATANAME, ORDERID
+		)
+		VALUES
+		(
+		#{queryCatalogId},
+		#{queryName},1
+		)
+	</insert>
+	<insert id="insertClass">
+		<selectKey keyProperty="queryClassId" resultType="java.lang.Long" order="BEFORE">
+	    	<!-- SELECT NEXT VALUE FOR MYCATSEQ_DIC_PROTO_CLASS -->
+	    	select MYCAT_SEQ_NEXTVAL('DIC_PROTO_CLASS')
+	  	</selectKey>
+		INSERT INTO DIC_PROTO_CLASS
+		(
+		CLASSID, 
+		CLASSNAME, CATALOGID
+		)
+		VALUES
+		(
+		#{queryClassId},
+		#{queryName},#{queryCatalogId}
+		)
+	</insert>
+	<insert id="insertProduct">
+		<selectKey keyProperty="queryProductId" resultType="java.lang.Long" order="BEFORE">
+	    	<!-- SELECT NEXT VALUE FOR MYCATSEQ_DIC_PROTO_PRODUCT -->
+	    	select MYCAT_SEQ_NEXTVAL('DIC_PROTO_PRODUCT')
+	  	</selectKey>
+		INSERT INTO DIC_PROTO_PRODUCT
+		(
+		PRODUCTID, 
+		PRODUCT_NAME, CATALOGID,CLASSID,SERVERBUILD_ID,SERVERROOM_ID
+		)
+		VALUES
+		(
+		#{queryProductId},
+		#{queryName},#{queryCatalogId},#{queryClassId},#{queryServerBuildId},#{queryServerRoomId}
+		)
+	</insert>
+	<insert id="insertModule">
+		<selectKey keyProperty="queryModuleId" resultType="java.lang.Long" order="BEFORE">
+	    	<!-- SELECT NEXT VALUE FOR MYCATSEQ_DIC_PROTO_MODULE -->
+	    	SELECT MYCAT_SEQ_NEXTVAL('DIC_PROTO_MODULE')
+	  	</selectKey>
+		INSERT INTO DIC_PROTO_MODULE
+		(
+		MODULEID, 
+		MODULE_NAME,CATALOGID,CLASSID,PRODUCTID,DESCINFO
+		)
+		VALUES
+		(
+		#{queryModuleId},
+		#{queryName},#{queryCatalogId},#{queryClassId},#{queryProductId},''
+		)
+	</insert>
+	
+	<update id="updateCatalog">
+		UPDATE DIC_PROTO_CATALOG
+		SET
+		CATANAME = #{queryName}
+		WHERE CATALOGID = #{queryCatalogId}
+	</update>
+	
+	<update id="updateClass">
+		UPDATE DIC_PROTO_CLASS
+		SET
+		CLASSNAME = #{queryName}
+		WHERE CLASSID = #{queryClassId} AND CATALOGID = #{queryCatalogId}
+	</update>
+	
+	<update id="updateProduct">
+		UPDATE DIC_PROTO_PRODUCT
+		SET
+		PRODUCT_NAME = #{queryName},
+		SERVERBUILD_ID = #{queryServerBuildId},
+		SERVERROOM_ID = #{queryServerRoomId}
+		WHERE CLASSID = #{queryClassId} AND CATALOGID = #{queryCatalogId} AND PRODUCTID = #{queryProductId}
+	</update>
+	
+	<update id="updateModule">
+		UPDATE DIC_PROTO_MODULE
+		SET
+		MODULE_NAME = #{queryName}
+		WHERE CLASSID = #{queryClassId} AND CATALOGID = #{queryCatalogId} AND PRODUCTID = #{queryProductId} AND MODULEID = #{queryModuleId} 
+	</update>
+	
+	<delete id="deleteCatalog">
+		DELETE FROM DIC_PROTO_CATALOG
+		WHERE CATALOGID = #{queryCatalogId};
+		
+		DELETE FROM DIC_PROTO_CLASS
+		WHERE CATALOGID = #{queryCatalogId};
+		
+		DELETE FROM DIC_PROTO_PRODUCT
+		WHERE CATALOGID = #{queryCatalogId};
+		
+		DELETE FROM DIC_PROTO_MODULE
+		WHERE CATALOGID = #{queryCatalogId};
+	
+	</delete>
+	
+	<delete id="deleteClass">
+		DELETE FROM DIC_PROTO_CLASS
+		WHERE CLASSID = #{queryClassId} AND CATALOGID = #{queryCatalogId};
+		
+		DELETE FROM DIC_PROTO_PRODUCT
+		WHERE CLASSID = #{queryClassId};
+		
+		DELETE FROM DIC_PROTO_MODULE
+		WHERE CLASSID = #{queryClassId}
+	</delete>
+	
+	<delete id="deleteProduct">
+		DELETE FROM DIC_PROTO_PRODUCT
+		WHERE CLASSID = #{queryClassId} AND CATALOGID = #{queryCatalogId} AND PRODUCTID = #{queryProductId};
+		
+		DELETE FROM DIC_PROTO_MODULE
+		WHERE PRODUCTID = #{queryProductId};
+		
+	</delete>
+	
+	<delete id="deleteModule">
+		DELETE FROM DIC_PROTO_MODULE
+		WHERE CLASSID = #{queryClassId} AND CATALOGID = #{queryCatalogId} AND PRODUCTID = #{queryProductId} AND MODULEID = #{queryModuleId}
+	</delete>
+	
+	<select id="catalogIsExist" resultType="int">
+		SELECT COUNT(1) FROM DIC_PROTO_CATALOG
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			AND CATANAME = #{queryName}
+			<!-- <if test="queryCatalogId > 0">
+				AND CATALOGID &lt;&gt; #{queryCatalogId}
+			</if> -->
+		</trim>
+	</select>
+	
+	<select id="classIsExist" resultType="int">
+		SELECT COUNT(1) FROM DIC_PROTO_CLASS
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			AND CLASSNAME = #{queryName}
+			<if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID &lt;&gt; #{queryClassId}
+			</if>
+		</trim>
+	</select>
+	
+	<select id="productIsExist" resultType="int">
+		SELECT COUNT(1) FROM DIC_PROTO_PRODUCT
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			AND PRODUCT_NAME = #{queryName}
+			<if test="queryCatalogId > 0">
+				AND CATALOGID = #{queryCatalogId}
+			</if>
+			<if test="queryClassId > 0">
+				AND CLASSID = #{queryClassId}
+			</if>
+			<if test="queryProductId > 0">
+				AND PRODUCTID &lt;&gt; #{queryProductId}
+			</if>
+		</trim>
+	</select>
+	
+</mapper>

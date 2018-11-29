@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aotain.tdc.dao.strategy.AccountManagementDao">
+	<select id="getTableColumns" resultType="java.util.HashMap">
+		SELECT POLICY_INTERFACE_ACCOUT.ID,
+			POLICY_INTERFACE_ACCOUT.SYSTEM_ID,
+			POLICY_INTERFACE_ACCOUT.USERNAME,
+			POLICY_INTERFACE_ACCOUT.PASSWD,
+			POLICY_INTERFACE_ACCOUT.IP,
+			POLICY_INTERFACE_ACCOUT.CONTACT,
+			POLICY_INTERFACE_ACCOUT.MOBILE,
+			POLICY_INTERFACE_ACCOUT.EMAIL,
+			IF(POLICY_INTERFACE_ACCOUT.STATUS = 0, '使用中', '已停用') as STATUS,
+			DATE_FORMAT(POLICY_INTERFACE_ACCOUT.CREATETIME,'%Y-%m-%d %H:%i:%s') as CREATETIME,
+			POLICY_INTERFACE_ACCOUT.CREATE_USER 
+		FROM POLICY_INTERFACE_ACCOUT
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test=" queryStartTime != null and queryStartTime !='' ">
+				AND CREATETIME > #{queryStartTime}
+			</if>
+			<if test=" queryEndTime != null and queryEndTime !='' ">
+				AND CREATETIME &lt;= #{queryEndTime}
+			</if>
+			<if test=" queryUserName != null and queryUserName !='' ">
+				AND USERNAME like CONCAT('%',#{queryUserName},'%')
+			</if>
+			<!-- IP查询有空再改 -->
+			<if test=" queryDestIp != null and queryDestIp !='' ">
+				AND IP like CONCAT('%',#{queryDestIp},'%')
+			</if>
+			<if test=" queryContact != null and queryContact !='' ">
+				AND CONTACT like CONCAT('%',#{queryContact},'%')
+			</if>
+			<if test=" queryMobile != null and queryMobile !='' ">
+				AND MOBILE like CONCAT('%',#{queryMobile},'%')
+			</if>
+			<if test=" queryEmail != null and queryEmail !='' ">
+				AND EMAIL like CONCAT('%',#{queryEmail},'%')
+			</if>
+			<if test=" querySystemId != null and querySystemId !='' ">
+				AND SYSTEM_ID like CONCAT('%',#{querySystemId},'%')
+			</if>
+		</trim>
+		<if test=" order != null and order != '' and sort != null and sort != '' ">
+			order by ${sort} ${order}
+		</if>
+		<if test="isPaging == 1">
+		LIMIT #{startRow}, #{endRow}
+		</if>
+	</select>
+	<select id="getTableColumnsTotalCounts" resultType="java.lang.Integer">
+		SELECT count(1) FROM POLICY_INTERFACE_ACCOUT
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test=" queryStartTime != null and queryStartTime !='' ">
+				AND CREATETIME > #{queryStartTime}
+			</if>
+			<if test=" queryEndTime != null and queryEndTime !='' ">
+				AND CREATETIME &lt;= #{queryEndTime}
+			</if>
+			<if test=" queryUserName != null and queryUserName !='' ">
+				AND USERNAME like CONCAT('%',#{queryUserName},'%')
+			</if>
+			<!-- IP查询有空再改 -->
+			<if test=" queryDestIp != null and queryDestIp !='' ">
+				AND IP like CONCAT('%',#{queryDestIp},'%')
+			</if>
+			<if test=" queryContact != null and queryContact !='' ">
+				AND CONTACT like CONCAT('%',#{queryContact},'%')
+			</if>
+			<if test=" queryMobile != null and queryMobile !='' ">
+				AND MOBILE like CONCAT('%',#{queryMobile},'%')
+			</if>
+			<if test=" queryEmail != null and queryEmail !='' ">
+				AND EMAIL like CONCAT('%',#{queryEmail},'%')
+			</if>
+			<if test=" querySystemId != null and querySystemId !='' ">
+				AND SYSTEM_ID like CONCAT('%',#{querySystemId},'%')
+			</if>
+		</trim>
+	</select>
+	<insert id="insert">
+		INSERT INTO POLICY_INTERFACE_ACCOUT
+		(
+		ID,
+		USERNAME,
+		PASSWD,
+		SYSTEM_ID,
+		CONTACT,
+		MOBILE,
+		EMAIL,
+		CREATETIME,
+		CREATE_USER,
+		STATUS,
+		IP
+		)
+		VALUES
+		(
+		<!-- (SELECT NEXT VALUE FOR MYCATSEQ_POLICY_INTERFACE_ACCOUT), -->
+		MYCAT_SEQ_NEXTVAL('POLICY_INTERFACE_ACCOUT'),
+		#{queryUserName},
+		#{queryPassword},
+		<if test="querySystemId != null">
+			#{querySystemId},
+		</if>
+		<if test="querySystemId == null">
+			'',
+		</if>
+		<if test="queryContact != null">
+			#{queryContact},
+		</if>
+		<if test="queryContact == null">
+			'',
+		</if>
+		<if test="queryMobile != null">
+			#{queryMobile},
+		</if>
+		<if test="queryMobile == null">
+			'',
+		</if>
+		<if test="queryEmail != null">
+			#{queryEmail},
+		</if>
+		<if test="queryEmail == null">
+			'',
+		</if>
+		SYSDATE(),
+		#{queryCreateUser},
+		0,
+		#{queryDestIp}
+		)
+	</insert>
+
+	<delete id="delete">
+		DELETE FROM POLICY_INTERFACE_ACCOUT
+		WHERE ID in (${queryIds})
+	</delete>
+
+	<update id="update">
+		UPDATE POLICY_INTERFACE_ACCOUT
+		SET
+		<trim prefixOverrides=",">
+			CREATETIME = SYSDATE()
+			<if test="queryUserName != null and queryUserName != ''">
+				,USERNAME = #{queryUserName}
+			</if>
+			<if test="querySystemId != null">
+				,SYSTEM_ID = #{querySystemId}
+			</if>
+			<if test="queryContact != null">
+				,CONTACT = #{queryContact}
+			</if>
+			<if test="queryMobile != null">
+				,MOBILE = #{queryMobile}
+			</if>
+			<if test="queryEmail != null">
+				,EMAIL = #{queryEmail}
+			</if>
+			<if test="queryStatus >=0 ">
+				,STATUS = #{queryStatus}
+			</if>
+			<!-- 不改密码的话不带密码过来 -->
+			<if test="queryPassword != null and queryPassword != ''">
+				,PASSWD = #{queryPassword}
+			</if>
+			<if test="queryDestIp != null and queryDestIp != ''">
+				,IP = #{queryDestIp}
+			</if>
+		</trim>
+		WHERE ID = #{queryId}
+	</update>
+	<select id="isExsit" resultType="java.lang.Integer">
+		select count(1) from POLICY_INTERFACE_ACCOUT 
+		WHERE SYSTEM_ID = #{querySystemId} AND USERNAME = #{queryUserName}
+	</select>
+</mapper>

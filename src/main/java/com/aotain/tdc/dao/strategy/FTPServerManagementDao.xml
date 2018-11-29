@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace = "com.aotain.tdc.dao.strategy.FTPServerManagementDao">
+<select id="getTableColumns" resultType = "java.util.HashMap">
+	SELECT FTP_ID, FTP_NAME, IP, PORT, USERNAME, PASSWD,
+		   DATE_FORMAT(CREATETIME,'%Y-%m-%d %H:%i:%s') as CREATETIME
+	FROM POLICY_FTP_SERVER
+	<trim prefix="WHERE" prefixOverrides="AND |OR ">
+		<if test=" queryStartTime != null and queryStartTime !='' ">
+			AND CREATETIME &gt;= #{queryStartTime}
+		</if>
+		<if test=" queryEndTime != null and queryEndTime !='' ">
+			AND CREATETIME &lt;= #{queryEndTime}
+		</if>
+		<if test="queryFTPServerId > 0 ">
+			AND FTP_ID = #{queryFTPServerId}
+		</if>
+		<if test="queryFTPServerIds != null and  queryFTPServerIds!='' ">
+			AND FTP_ID in (${queryFTPServerIds})
+		</if>
+		<if test="queryFTPServerIp != null and queryFTPServerIp != '' and queryFTPServerIp != '-1' ">
+			AND IP LIKE CONCAT('%',#{queryFTPServerIp},'%')
+		</if>
+		<if test="queryPort != null and queryPort != '' ">
+			AND PORT = #{queryPort}
+		</if>
+		<if test="queryUserName != null and queryUserName != '' ">
+			AND USERNAME LIKE CONCAT('%',#{queryUserName},'%')
+		</if>
+	</trim>
+	<if test=" order != null and order != '' and sort != null and sort != '' ">
+		ORDER BY ${sort} ${order}
+		</if>
+		<if test="isPaging == 1">
+		LIMIT #{startRow}, #{endRow}
+		</if>
+</select>
+
+<select id="getTableColumnsTotalCounts" resultType = "java.lang.Integer">
+	SELECT count(1) FROM POLICY_FTP_SERVER
+	<trim prefix="WHERE" prefixOverrides="AND |OR ">
+		<if test=" queryStartTime != null and queryStartTime !='' ">
+			AND CREATETIME &gt; #{queryStartTime}
+		</if>
+		<if test=" queryEndTime != null and queryEndTime !='' ">
+			AND CREATETIME &lt;= #{queryEndTime}
+		</if>
+		<if test="queryFTPServerId > 0 ">
+			AND FTP_ID = #{queryFTPServerId}
+		</if>
+		<if test="queryFTPServerIds != null and  queryFTPServerIds!='' ">
+			AND FTP_ID in (${queryFTPServerIds})
+		</if>
+		<if test="queryFTPServerIp != null and queryFTPServerIp !='' and queryFTPServerIp != '-1' ">
+			AND IP LIKE CONCAT('%',#{queryFTPServerIp},'%')
+		</if>
+		<if test="queryPort != null and queryPort != '' ">
+			AND PORT = #{queryPort}
+		</if>
+		<if test="queryUserName != null and queryUserName != '' ">
+			AND USERNAME LIKE CONCAT('%',#{queryUserName},'%')
+		</if>
+	</trim>
+</select>
+<insert id="insert">
+	INSERT INTO POLICY_FTP_SERVER
+	(
+	FTP_ID,
+	FTP_NAME,
+	IP,
+	PORT,
+	USERNAME,
+	PASSWD,
+	CREATETIME,
+	CREATE_USER
+	)
+	VALUES
+	(
+	MYCAT_SEQ_NEXTVAL('POLICY_FTP_SERVER'),
+	#{queryFTPServerName},
+	#{queryFTPServerIp},
+	#{queryPort},
+	#{queryUserName},
+	#{queryPassword},
+	SYSDATE(),
+	#{queryCreateUser}
+	)
+</insert>
+<update id="update">
+	UPDATE POLICY_FTP_SERVER
+	<trim prefix="SET" suffixOverrides=",">
+		<if test="queryFTPServerName != null and queryFTPServerName != ''">
+			FTP_NAME = #{queryFTPServerName},
+		</if>
+		<if test="queryFTPServerIp != null and queryFTPServerIp != ''">
+			IP = #{queryFTPServerIp},
+		</if>
+		<if test="queryPort != null and queryPort != ''">
+			PORT = #{queryPort},
+		</if>
+		<if test="queryUserName != null and queryUserName != ''">
+			USERNAME = #{queryUserName},
+		</if>
+		<if test="queryPassword != null and queryPassword != ''">
+			PASSWD = #{queryPassword}
+		</if>
+	</trim>
+		WHERE FTP_ID = #{queryFTPServerId}
+</update>
+<delete id="delete">
+	DELETE FROM POLICY_FTP_SERVER
+	WHERE FTP_ID in (${queryFTPServerIds})
+</delete>
+</mapper>

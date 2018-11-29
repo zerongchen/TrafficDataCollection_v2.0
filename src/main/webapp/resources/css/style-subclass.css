@@ -1,0 +1,290 @@
+.computer_room .time_search,.traffic .time_search {
+    overflow: hidden;
+}
+
+.computer_room .c-traffic {
+    margin-top: 10px; margin-left:230px;
+    width: 100%;
+}
+
+.computer_room .c-traffic .table-title {
+  overflow: hidden;
+
+    width: 100%;
+    margin-bottom: 25px;
+}
+
+.computer_room .c-traffic .table-title a {
+    text-decoration: none;
+}
+
+.computer_room .c-traffic .table-title #chart_a {
+    float: left;
+    padding: 10px 30px;
+}
+
+.computer_room .c-traffic .table-title .table_b {
+    width: 90%;
+    margin: 0 auto 20px;
+}
+
+.computer_room .c-traffic .table-title .table_b th,
+.computer_room .c-traffic .table-title .table_b td {
+    width: 130px;
+}
+
+.computer_room .c-traffic .table-title .table {
+    width: 95%;
+    margin: 10px auto 10px 20px;
+}
+
+.computer_room .disn {
+    display: none;
+}
+.traffic .frame .time_search,.ip .frame .time_search,.regional .frame .time_search,.protocol .frame .time_search,.computer_room .frame .time_search {
+    padding: 15px 10px 0;
+}
+.quality_regional .frame .time_search {
+    padding: 15px 10px 0;
+}
+.export .table-title {
+    margin: 30px;
+}
+
+.export .table-title .table {
+    width: 95%;
+    margin: 30px auto;
+}
+
+.export #chart {
+    margin-top: 20px;
+}
+
+.export .table_b td {
+    line-height: 18px;
+}
+
+.disb {
+    margin-bottom: 10px;
+    display: inline-block;
+}
+
+.disb>button {
+    float: left;
+    border-radius: 0;
+    cursor: pointer;
+}
+
+.disb>button:hover {
+    border: 1px solid #166f94;
+}
+
+.disb>button:active {
+    background: white;
+}
+
+.disb .check {
+    background: #166f94;
+    border: 1px solid #166f94;
+    color: white;
+}
+
+.disb .check:active {
+    background: #166f94;
+}
+
+.protocol>button+button {
+    margin-left: 0;
+}
+
+.protocol #statistical {
+    display: none;
+}
+
+.protocol #chart,
+.protocol #chart_aa {
+    margin-top: 30px;
+}
+
+.protocol #chart_cc,
+.protocol #chart_dd {
+    display: none;
+}
+
+.protocol .table {
+    width: 95%;
+    margin: 0 0 25px;
+}
+
+.protocol .pagesgroup {
+    width: 95%;
+}
+
+.base .c-traffic {
+    margin-top: 30px;
+    width: 90%;
+}
+
+.base .table {
+    width: 90%;
+    margin: 20px auto;
+}
+
+.base .table-title {
+    width: 98%;
+    margin-bottom: 20px;
+}
+
+.base .table-title #chart_a,
+.base .table-title #chart_b {
+    float: left;
+    margin-bottom: 30px;
+}
+
+.base .table-title .table {
+    margin-top: 20px;
+    margin: 20px auto;
+}
+
+.base .pagesgroup {
+    margin-top: 30px;
+    width: 95%;
+}
+
+.regional #provinces>div button {
+    margin: 0 20px;
+}
+
+.regional #chart_d {
+    margin: 15px auto;
+}
+
+.regional #provinces {
+    display: none;
+}
+
+.regional .c-traffic,
+.protocol .c-traffic {
+    margin: 0 0 10px;
+    width: 100%;
+}
+
+.regional .c-traffic>button {
+    margin-bottom: 20px;
+}
+
+.regional .table {
+    margin: 0px auto 20px;
+}
+
+.regional .table-title {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.regional .table-title #chart_a,
+.regional .table-title #chart_b {
+    float: left;
+}
+
+.regional .table-title .table {
+    margin: 0 auto 0 20px ;
+}
+
+.wrap{ margin:10px 0; height: 480px;overflow:auto; clear:both;}
+.wrap300{ margin:10px 0; height: 300px;overflow:auto; clear:both;}
+#datepicker,#datepicker2{width: 130px !important;}
+
+.regional .table-title #main,
+.regional .table-title #chart_e {
+    margin: 20px 0;
+    float: left;
+}
+
+.regional .pagesgroup {
+    margin-top: 30px;
+    width: 95%;
+}
+
+.operator .table-title .table {
+    margin-top: 0px;
+}
+
+.access_domain .table-title {
+    margin: 30px;
+}
+
+.access_domain #chart_a {
+    margin-top: 30px;
+}
+
+.access_domain .table {
+    width: 95%;
+    margin: 0 auto 25px;
+}
+
+@media screen and (max-width: 1600px) {
+    .base {
+        margin-top: 5px;
+    }
+    .back_search .time_search {
+        height: 60px !important;
+        margin-bottom: 20px;
+    }
+}
+/* @media screen and (max-width: 1280px) {
+    .protocol .table-title {
+        width: 95%;
+    }
+    .base .c-traffic {
+        width: 87%;
+    }
+    .computer_room .c-traffic {
+        width: 83% !important;
+    }
+} */
+.protocol .time_search,
+.regional .time_search,
+.operator .time_search,
+.ip .time_search,
+.quality_regional .time_search {
+    overflow:hidden;
+}
+
+.access .time_search,
+.quality_access-s .time_search {
+    overflow:hidden;
+}
+
+.quality_regional #provinces {
+    display: block;
+}
+
+.back_search .time_search .fl>div {
+    float: left;
+}
+
+.back_search .time_search .fl>div input {
+    width: 120px;
+}
+
+.back_search table.table {
+    width: 95%;
+    margin: 0 0 0 20px;
+}
+
+.back_search .pagesgroup {
+    width: 95%;
+}
+
+.indicators {
+    margin: 10px 0 0 20px; clear:both;
+}
+
+.indicators_two {display: inline-block;padding: 5px 10px;margin: -38px 0 0 150px; float: left; width:auto;}
+.indicators_two span{display: inline-block;margin: 0 10px;line-height: 25px}
+.indicators_two select{ margin-right:20px;}
+.indicators_two input{ margin-right:10px;}
+
+#chart_layer .indicators_two{ margin-top:-30px;}
+#chart_layer .indicators_two label,#chart_layer .indicators_two label input{ cursor:pointer;}

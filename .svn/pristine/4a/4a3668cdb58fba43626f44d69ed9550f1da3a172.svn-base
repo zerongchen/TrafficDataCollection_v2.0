@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aotain.tdc.dao.businessAnalysis.UrlQualityDao">
+	<select id="getTableColumns" resultType ="java.util.HashMap">
+		SELECT t1.URL,		
+		<!-- count(t1.R_STATTIME) as COUNTNUM, -->
+		IFNULL(SUM(t1.VISIT_COUNT), 0) AS VISIT_COUNT, 
+		round( IFNULL(sum(t1.VISIT_COUNT), 0) * 100 / IF(t1.VISIT_COUNT_ALL = 0 || IF(t1.VISIT_COUNT_ALL IS NULL, TRUE, FALSE), 1, t1.VISIT_COUNT_ALL), 4) AS VISIT_COUNT_RATE,
+		ROUND((IFNULL(sum(t1.FLOW_UP), 0)+IFNULL(sum(t1.FLOW_DN), 0))/1024/1024,2) AS FLOW,
+		IFNULL(SUM(t1.RESPONSE_DELAY), 0) AS RESPONSE_DELAY,
+		IFNULL(SUM(t1.SERVER_DELAY), 0) AS SERVER_DELAY,
+		IFNULL(SUM(t1.CLIENT_DELAY), 0) AS CLIENT_DELAY,
+		<!-- IFNULL(SUM(t1.TCP_SHAKEHANDS_TIME), 0) AS TCP_SHAKEHANDS_TIME, -->
+		ROUND( IFNULL(SUM(t1.TCP_SHAKEHANDS_TIME), 0)  / IF(SUM(t1.SUCCESSCONNECT_COUNT) = 0 || IF(sum(t1.SUCCESSCONNECT_COUNT) IS NULL, TRUE, FALSE), 1, SUM(t1.SUCCESSCONNECT_COUNT)), 2) AS TCP_SHAKEHANDS_TIME,
+		IFNULL(SUM(t1.CONNECT_COUNT), 0) AS CONNECT_COUNT,
+		IFNULL(SUM(t1.SUCCESSCONNECT_COUNT), 0) AS SUCCESSCONNECT_COUNT,
+		ROUND( IFNULL(SUM(t1.SUCCESSCONNECT_COUNT), 0) * 100 / IF(SUM(t1.CONNECT_COUNT) = 0 || IF(sum(t1.CONNECT_COUNT) IS NULL, TRUE, FALSE), 1, SUM(t1.CONNECT_COUNT)), 2) AS SUCCESSCONNECT_RATE,
+		ROUND( (IFNULL(SUM(t1.CONNECT_COUNT), 0) - IFNULL(SUM(t1.SUCCESSCONNECT_COUNT), 0) )*100/ IF(SUM(t1.CONNECT_COUNT) = 0 || IF(SUM(t1.CONNECT_COUNT) IS NULL, TRUE, FALSE), 1, SUM(t1.CONNECT_COUNT)), 2) AS FAILCONNECT_RATE,
+		IFNULL(SUM(t1.RESPFAIL_COUNT), 0) AS RESPFAIL_COUNT, 
+		IFNULL(SUM(t1.CONNECTTIMEOUT_COUNT), 0) AS CONNECTTIMEOUT_COUNT,
+		ROUND( IFNULL(SUM(t1.RETRANSPACKAGE_UP), 0) *100/ IF(SUM(t1.DATAPACKAGE_UP)=0 || IF(SUM(t1.DATAPACKAGE_UP) IS NULL, TRUE, FALSE), 1, SUM(t1.DATAPACKAGE_UP)), 2) AS RETRANSPACKAGE_UP_RATE,
+		ROUND( IFNULL(SUM(t1.RETRANSPACKAGE_DN), 0) *100/ IF(SUM(t1.DATAPACKAGE_DN)=0 || IF(SUM(t1.DATAPACKAGE_DN) IS NULL, TRUE, FALSE), 1, SUM(t1.DATAPACKAGE_DN)), 2) AS RETRANSPACKAGE_DN_RATE
+		FROM (
+			SELECT
+				t2.R_STATTIME,
+				t2.URL,
+				IFNULL(sum(t2.HTTP_VISIT_COUNT), 0) AS VISIT_COUNT, 
+				(select IFNULL(sum(HTTP_VISIT_COUNT),0) from  REPORT_URL_QUALITY_H
+				<trim prefix="WHERE" prefixOverrides="AND |OR ">
+				<if test="queryStartTime != null and queryStartTime != '' ">
+					AND R_STATTIME &gt;= #{queryStartTime}
+				</if>
+				<if test="queryEndTime != null and queryEndTime != '' ">
+					AND R_STATTIME &lt; #{queryEndTime}
+				</if>
+				<if test="queryUrl != null and queryUrl != '' ">  
+					AND LOWER(URL) LIKE CONCAT('%','${queryUrl}','%' ) 
+				</if>
+				</trim>
+				) AS VISIT_COUNT_ALL,
+				IFNULL(SUM(t2.FLOW_UP), 0) AS FLOW_UP, 
+				IFNULL(SUM(t2.FLOW_DN), 0) AS FLOW_DN,
+				IFNULL(SUM(t2.HTTP_RESPONSE_DELAY), 0) AS RESPONSE_DELAY,
+				IFNULL(SUM(t2.TCP_SERVER_DELAY), 0) AS SERVER_DELAY,
+				IFNULL(SUM(t2.TCP_CLIENT_DELAY), 0) AS CLIENT_DELAY,
+				IFNULL(SUM(t2.TCP_SHAKEHANDS_TIME), 0) AS TCP_SHAKEHANDS_TIME,
+				IFNULL(SUM(t2.TCP_CONNECT_COUNT), 0) AS CONNECT_COUNT,
+				IFNULL(SUM(t2.TCP_SUCCESSCONNECT_COUNT), 0) AS SUCCESSCONNECT_COUNT,
+				IFNULL(SUM(t2.HTTP_RESPFAIL_COUNT), 0) AS RESPFAIL_COUNT,
+				IFNULL(SUM(t2.HTTP_CONNECTTIMEOUT_COUNT), 0) AS CONNECTTIMEOUT_COUNT,
+				IFNULL(SUM(t2.TCP_RETRANSPACKAGE_UP), 0) AS RETRANSPACKAGE_UP,
+				IFNULL(SUM(t2.TCP_RETRANSPACKAGE_DN), 0) AS RETRANSPACKAGE_DN,
+				IFNULL(SUM(t2.TCP_DATAPACKAGE_UP), 0) AS DATAPACKAGE_UP,
+				IFNULL(SUM(t2.TCP_DATAPACKAGE_DN), 0) AS DATAPACKAGE_DN
+			FROM ${queryTableName} t2
+			<trim prefix="WHERE" prefixOverrides="AND |OR ">
+				<if test="queryStartTime != null and queryStartTime != '' ">
+					AND t2.R_STATTIME &gt;= #{queryStartTime}
+				</if>
+				<if test="queryEndTime != null and queryEndTime != '' ">
+					AND t2.R_STATTIME &lt; #{queryEndTime}
+				</if>
+				<if test="queryUrl != null and queryUrl != '' ">  
+					AND LOWER(URL) LIKE CONCAT('%','${queryUrl}','%' ) 
+				</if>
+			</trim> 
+			GROUP BY t2.URL, t2.R_STATTIME
+		) t1 GROUP BY t1.URL 
+		<if test=" order != null and order != '' and sort != null and sort != '' ">  
+			ORDER BY ${sort} ${order}
+		</if>
+		<if test="isPaging == 1">
+			LIMIT #{startRow}, #{endRow}
+		</if>
+	</select>
+	<select id="getTableColumnsTotalCounts" resultType="java.lang.Integer">
+		SELECT COUNT(1) FROM (SELECT URL FROM ${queryTableName} t1
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="queryStartTime != null and queryStartTime != '' ">
+				AND R_STATTIME &gt;= #{queryStartTime}
+			</if>
+			<if test="queryEndTime != null and queryEndTime != '' ">
+				AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryUrl != null and queryUrl != '' ">  
+				AND LOWER(URL) LIKE CONCAT('%','${queryUrl}','%' ) 
+			</if>
+		</trim> 
+		 GROUP BY T1.URL) t2
+	</select>
+</mapper>

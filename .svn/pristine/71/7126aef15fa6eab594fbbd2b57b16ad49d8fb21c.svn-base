@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aotain.tdc.dao.businessAnalysis.PageAnalysisDao" >
+<select id="getTableColumns" resultType ="java.util.HashMap">
+		SELECT
+		t1.PRODUCTID, t1.MODULEID, t1.PAGEID, t2.PAGE_NAME, t3.PAGE_URL, CONCAT(t1.PRODUCTID, '_', t1.MODULEID, '_', t1.PAGEID) AS PMPID,
+		IFNULL(sum(t1.RESPONSE_DELAY), 0) as RESPONSE_DELAY,
+		IFNULL(sum(t1.SERVER_DELAY), 0) as SERVER_DELAY,
+		IFNULL(sum(t1.CLIENT_DELAY), 0) as CLIENT_DELAY,
+		round( IFNULL(sum(t1.SUCCESSCONNECT_COUNT), 0) *100 / IF(sum(t1.CONNECT_COUNT)=0 || IF(sum(t1.CONNECT_COUNT) is null, true, false), 1, sum(t1.CONNECT_COUNT)), 2) as SUCCESSCONNECT_RATE,
+		round( IFNULL(sum(t1.CONNECTTIMEOUT_COUNT), 0) *100 / IF(sum(t1.CONNECT_COUNT)=0 || IF(sum(t1.CONNECT_COUNT) is null, true, false), 1, sum(t1.CONNECT_COUNT)), 2) as CONNECTTIMEOUT_RATE,
+		round( IFNULL(sum(t1.RETRANSPACKAGE_UP), 0) *100 / IF(sum(t1.DATAPACKAGE_UP)=0 || IF(sum(t1.DATAPACKAGE_UP) is null, true, false), 1, sum(t1.DATAPACKAGE_UP)), 2) as RETRANSPACKAGE_UP_RATE,
+		round( IFNULL(sum(t1.RETRANSPACKAGE_DN), 0) *100 / IF(sum(t1.DATAPACKAGE_DN)=0 || IF(sum(t1.DATAPACKAGE_DN) is null, true, false), 1, sum(t1.DATAPACKAGE_DN)), 2) as RETRANSPACKAGE_DN_RATE,
+		IFNULL(sum(t1.PAGE_VIEW), 0) as PAGE_VIEW
+		FROM ${queryTableName} t1
+		LEFT JOIN DIC_PROTO_PAGE t2
+		ON t1.PRODUCTID = t2.PAGE_PRODUCTID AND t1.MODULEID = t2.PAGE_MODULEID AND t1.PAGEID = t2.PAGEID
+		LEFT JOIN DIC_PAGE_URL t3
+		ON t1.PAGEID = t3.PAGE_ID
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND t1.R_STATTIME &gt; #{queryStartTime} AND t1.R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryProductId >= 0">
+				AND t1.PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId >= 0">
+				AND t1.MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryPageName != '' and queryPageName != null">
+				AND t2.PAGE_NAME LIKE CONCAT('%',#{queryPageName},'%')
+			</if>
+			<if test="queryUrl != '' and queryUrl != null">
+				AND t3.PAGE_URL LIKE CONCAT('%',#{queryUrl},'%')
+			</if>
+		</trim>
+		GROUP BY PMPID
+		<if test=" order != null and order != '' and sort != null and sort != '' ">  
+			order by ${sort} ${order}
+		</if>
+		<if test="isPaging == 1 and endRow != 0" >
+			LIMIT #{startRow}, #{endRow}
+		</if>
+</select>
+
+<!-- <select id="getTableColumnsTotalCounts" resultType="java.lang.Integer">
+	SELECT COUNT(1) FROM
+	(SELECT PRODUCTID FROM ${queryTableName}
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryProductId >= 0">
+				AND PRODUCTID = #{queryProductId}
+			</if>
+			<if test="queryModuleId >= 0">
+				AND MODULEID = #{queryModuleId}
+			</if>
+			<if test="queryPageName != '' and queryPageName != null">
+				AND PAGE_NAME LIKE CONCAT('%',#{queryPageName},'%')
+			</if>
+			<if test="queryUrl != '' and queryUrl != null">
+				AND PAGE_URL LIKE CONCAT('%',#{queryUrl},'%')
+			</if>
+		</trim>
+		GROUP BY PRODUCTID) t1
+</select> -->
+</mapper>

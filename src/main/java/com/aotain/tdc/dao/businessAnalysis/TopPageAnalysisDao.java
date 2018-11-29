@@ -1,0 +1,11 @@
+package com.aotain.tdc.dao.businessAnalysis;
+
+import java.util.HashMap;
+import java.util.List;
+
+import com.aotain.tdc.dto.common.BaseDTO;
+
+public interface TopPageAnalysisDao {
+	public List<HashMap<String, Object>> getTableColumns(BaseDTO dto);
+//	public Integer getTableColumnsTotalCounts(BaseDTO dto);
+}

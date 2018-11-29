@@ -1,0 +1,140 @@
+.popup{
+   position:absolute;
+   z-index: 999;
+   background-color: #fff;
+   display:none;
+  
+   /* height: 100%; */
+}
+
+.cloaseD{width:100%}
+.popup .windowtitle{
+  padding:5px 15px 5px 25px;
+  font-size:16px;
+  color:#fff;
+  font-weight:bold;
+  line-height: 30px;
+  background-color:#197093;
+}
+
+.popup .windowtitle .close{
+  width:25px;
+  height:25px;
+  float:right;
+  color:#fff;
+  line-height: 20px;
+  opacity: 1;
+}
+
+.popup .windowform{
+  padding:25px;
+}
+
+.popup .windowform input,
+.popup .windowform label,
+.popup .windowform select {
+    line-height: 30px;
+    width:300px;
+    -moz-border-radius: 0px; 
+    -webkit-border-radius: 0px; 
+}
+
+.popup .windowform .required{
+  color:red;
+  display:inline-block;
+}
+
+.popup .windowform label{
+  width:120px;
+  text-align: left;
+  display: inline-block;
+}
+
+.popup .windowform input,
+.popup .windowform select {
+    border: 1px solid #ddd;
+    font-family: Arial, Helvetica, sans-serif;
+    border-radius: 10px;
+    margin-right: 20px;
+    padding-left: 10px;
+    height: 25px
+}
+
+.popup .windowform .sublabel{
+  display:inline-block;
+  margin-right:20px;
+  font-style: normal;
+  width:auto;
+}
+
+.popup .windowform input[type="radio"],
+.popup .windowform input[type="checkbox"]{
+  width:10px;
+  margin-right:5px;
+  vertical-align: middle;
+}
+
+.popup .windowform li{
+  display: block;
+  padding:5px;
+}
+.popup .bottom{
+  height:10px;
+}
+
+.popup .windowform .confirm{
+   margin-top:10px;
+}
+
+.popup .btnwhite{
+  background-color:white;
+  background:none;
+  border:solid 1xp #ccc;
+}
+
+.popup .windowform .subform{
+  background: #E7F9F6;
+  border: 1px solid #7FC6BA;
+  padding:10px;
+  margin:5px auto 20px auto;
+}
+
+.popup .windowform .subform label{
+  width:70px;
+  text-align: left;
+  display: inline-block;
+}
+
+.popup .windowform .subform input,
+.popup .windowform .subform select{
+    border: 1px solid #ddd;
+    font-family: Arial, Helvetica, sans-serif;
+    border-radius: 10px;
+    margin-right: 20px;
+    padding-left: 10px;
+    height: 25px;
+    width:140px;
+}
+
+.popup .windowform .subform button{
+  width:auto;
+  padding:0 5px 0 5px;
+  height:24px;
+}
+.popup .windowform .subform .smallbtn{
+  width:20px;
+  height:20px;
+}
+.popup .windowform div ul{ margin-bottom:10px; width:100%; height:32px; overflow:hidden; border-bottom:1px solid #7fc6ba;}
+.popup .windowform div ul li{ float:left; margin:0 1px 1px 0; width:auto; overflow:hidden; text-align:center; line-height:31px; }
+.popup .windowform div ul li a{ display:block; padding: 0 10px; width:auto; height:31px; color:#247ba0; background:#f6f6f6; border:1px solid #e7e7e7; line-height: 28px;}
+.popup .windowform div ul li a:hover{ width:auto;  background:#e7f9f6; font-size:14px; font-weight:bold; color:#247ba0; text-decoration:none; border-top:1px solid #7fc6ba; border-right:1px solid #7fc6ba; border-left:1px solid #7fc6ba;}
+.popup .windowform div ul li.active { font-size:14px; font-weight:bold; color:#247ba0;}
+.popup .windowform div ul li.active a{ background:#e7f9f6; color:#247ba0;}
+
+.popup .windowform p i.green{color:#70c1b3;}
+.popup .windowform p i.red{color:#ff7f50;}
+
+.popup .windowform div .w140{ width:140px;}
+.popup .windowform div .w60{ width:60px;}
+

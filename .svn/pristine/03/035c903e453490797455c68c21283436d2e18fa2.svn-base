@@ -1,0 +1,33 @@
+1 - 上行速率 = 上行流量/表颗粒度（如小时表即除以3600s）
+2 - INSERT INTO `south_network`.`DIC_TABLECOLUMN` (
+		`TABLE_NAME`,
+		`COLUMN_VALUE`,
+		`COLUMN_TEXT`,
+		`COLUMN_ORDER`,
+		`COLUMN_TYPE`,
+		`ORDER_TYPE`,
+		`MODIFY_TIME`,
+		`COLUMN_UNIT`,
+		`SWITCHABLE`)
+	 SELECT
+		'FLOW_DIRECTION_TREND',
+		`COLUMN_VALUE`,
+		`COLUMN_TEXT`,
+		`COLUMN_ORDER`,
+		`COLUMN_TYPE`,
+		`ORDER_TYPE`,
+		`MODIFY_TIME`,
+		`COLUMN_UNIT`,
+		`SWITCHABLE` 
+	 FROM `south_network`.`DIC_TABLECOLUMN` where TABLE_NAME='FLOW_DIRECTION';
+3 - 业务配置完成后刷新下缓存
+4 - 部署到Linux如果impala查询有问题要换下jar包
+5 - 接口帐号管理添加防重复教验
+6 - 修改完质量指标后要刷新缓存
+7 - 填写字段的长度限制
+8 - search跟切换tab都要对bootstrap-table跟echarts进行刷新
+9 - 将没必要的table刷新按钮跟排序，自定义列去掉
+10 - 修改编辑弹出框的样式
+11 - impala语句优化加查询条件	
+12 - 序列新增
+13 - 弹窗后查询条件要保持不变

@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aotain.tdc.dao.quality.IpQualityDao">
+	<select id="getTableColumns" resultType ="java.util.HashMap">
+		
+		SELECT t1.DEST_IP,		
+					count(t1.R_STATTIME) as COUNTNUM,
+					IFNULL(sum(t1.FLOW_UP), 0) as FLOW_UP, IFNULL(sum(t1.FLOW_DN), 0) as FLOW_DN,
+					IFNULL(sum(t1.CONNECTTIMEOUT_COUNT), 0) as CONNECTTIMEOUT_COUNT, 
+					IFNULL(sum(t1.RESPFAIL_COUNT), 0) as RESPFAIL_COUNT, 
+					IFNULL(sum(t1.CONNECT_COUNT), 0) as CONNECT_COUNT,
+					IFNULL(sum(t1.SUCCESSCONNECT_COUNT), 0) as SUCCESSCONNECT_COUNT,
+					IFNULL(sum(t1.RESPONSE_DELAY), 0) as RESPONSE_DELAY,
+					IFNULL(sum(t1.SERVER_DELAY), 0) as SERVER_DELAY,
+					IFNULL(sum(t1.CLIENT_DELAY), 0) as CLIENT_DELAY,
+					
+					IFNULL(sum(t1.RESPONSE_DELAY_COUNT), 0) as RESPONSE_DELAY_COUNT,
+					IFNULL(sum(t1.SERVER_DELAY_COUNT), 0) as SERVER_DELAY_COUNT,
+					IFNULL(sum(t1.CLIENT_DELAY_COUNT), 0) as CLIENT_DELAY_COUNT,
+					case sum(t1.TCP_CONNECT_COUNT) WHEN 0 THEN 1 ELSE sum(t1.TCP_CONNECT_COUNT)  end as TCP_CONNECT_COUNT,
+					
+					round( IFNULL(sum(t1.SUCCESSCONNECT_COUNT), 0) *100 / IF(sum(t1.CONNECT_COUNT)=0 || IF(sum(t1.CONNECT_COUNT) is null, true, false), 1, sum(t1.CONNECT_COUNT)), 2) as SUCCESSCONNECT_RATE,
+					round( ( IFNULL(sum(t1.CONNECT_COUNT), 0) - IFNULL(sum(t1.SUCCESSCONNECT_COUNT), 0) )*100/ IF(sum(t1.CONNECT_COUNT)=0 || IF(sum(t1.CONNECT_COUNT) is null, true, false), 1, sum(t1.CONNECT_COUNT)), 2) as FAILCONNECT_RATE,
+					round( IFNULL(sum(t1.CONNECTTIMEOUT_COUNT), 0) *100/ IF(sum(t1.CONNECT_COUNT)=0 || IF(sum(t1.CONNECT_COUNT) is null, true, false), 1, sum(t1.CONNECT_COUNT)), 2) as CONNECTTIMEOUT_RATE,
+					round( IFNULL(sum(t1.RETRANSPACKAGE_UP), 0) *100/ IF(sum(t1.DATAPACKAGE_UP)=0 || IF(sum(t1.DATAPACKAGE_UP) is null, true, false), 1, sum(t1.DATAPACKAGE_UP)), 2) as RETRANSPACKAGE_UP_RATE,
+					round( IFNULL(sum(t1.RETRANSPACKAGE_DN), 0) *100/ IF(sum(t1.DATAPACKAGE_DN)=0 || IF(sum(t1.DATAPACKAGE_DN) is null, true, false), 1, sum(t1.DATAPACKAGE_DN)), 2) as RETRANSPACKAGE_DN_RATE,
+					round( IFNULL(sum(t1.FLOW_UP), 0) / IF(sum(t1.SESSIONTIME)=0 || IF(sum(t1.SESSIONTIME) is null, true, false), 1, sum(t1.SESSIONTIME)), 2) as UP_SESSION_RATE,
+					round( IFNULL(sum(t1.FLOW_DN), 0) / IF(t1.SESSIONTIME=0 || IF(sum(t1.SESSIONTIME) is null, true, false), 1, t1.SESSIONTIME), 2) as DN_SESSION_RATE,
+					round( IFNULL(sum(t1.MIDPACKAGEFLOW_DN), 0) / IF(sum(t1.MIDPACKAGETIME_DN)=0 || IF(sum(t1.MIDPACKAGETIME_DN) is null, true, false), 1, sum(t1.MIDPACKAGETIME_DN)), 2) as MIDPACKAGEFLOW_DN_RATE,
+					round( IFNULL(sum(t1.BIGPACKAGEFLOW_DN), 0) / IF(sum(t1.BIGPACKAGETIME_DN)=0 || IF(sum(t1.BIGPACKAGETIME_DN) is null, true, false), 1, sum(t1.BIGPACKAGETIME_DN)), 2) as BIGPACKAGEFLOW_DN_RATE
+		FROM (
+			SELECT
+				t2.R_STATTIME,t2.DEST_IP,
+				IFNULL(sum(t2.FLOW_UP), 0) as FLOW_UP, 
+				IFNULL(sum(t2.FLOW_DN), 0) as FLOW_DN,
+				IFNULL(sum(t2.CONNECTTIMEOUT_COUNT), 0) as CONNECTTIMEOUT_COUNT, 
+				IFNULL(sum(t2.RESPFAIL_COUNT), 0) as RESPFAIL_COUNT, 
+				IFNULL(sum(t2.CONNECT_COUNT), 0) as CONNECT_COUNT,
+				IFNULL(sum(t2.SUCCESSCONNECT_COUNT), 0) as SUCCESSCONNECT_COUNT,
+				IFNULL(sum(t2.RESPONSE_DELAY), 0) as RESPONSE_DELAY,
+				IFNULL(sum(t2.SERVER_DELAY), 0) as SERVER_DELAY,
+				IFNULL(sum(t2.CLIENT_DELAY), 0) as CLIENT_DELAY,
+				
+				sum(case t2.RESPONSE_DELAY WHEN 0 THEN 0 ELSE 1 end  )as RESPONSE_DELAY_COUNT,
+				sum(case t2.SERVER_DELAY WHEN 0 THEN 0 ELSE 1 end  )as SERVER_DELAY_COUNT,
+				sum(case t2.CLIENT_DELAY WHEN 0 THEN 0 ELSE 1 end  )as CLIENT_DELAY_COUNT,
+				sum(t2.TCP_CONNECT_COUNT)   as TCP_CONNECT_COUNT,
+				
+				IFNULL(sum(t2.RETRANSPACKAGE_UP), 0) as RETRANSPACKAGE_UP,
+				IFNULL(sum(t2.RETRANSPACKAGE_DN), 0) as RETRANSPACKAGE_DN,
+				IFNULL(sum(t2.DATAPACKAGE_UP), 0) as DATAPACKAGE_UP,
+				IFNULL(sum(t2.DATAPACKAGE_DN), 0) as DATAPACKAGE_DN,
+				IFNULL(sum(t2.SESSIONTIME), 0) as SESSIONTIME,
+				IFNULL(sum(t2.MIDPACKAGEFLOW_DN), 0) as MIDPACKAGEFLOW_DN,
+				IFNULL(sum(t2.BIGPACKAGEFLOW_DN), 0) as BIGPACKAGEFLOW_DN,
+				IFNULL(sum(t2.MIDPACKAGETIME_DN), 0) as MIDPACKAGETIME_DN,
+				IFNULL(sum(t2.BIGPACKAGETIME_DN), 0) as BIGPACKAGETIME_DN
+			FROM ${queryTableName} t2
+			<trim prefix="WHERE" prefixOverrides="AND |OR ">
+				<if test="queryStartTime != null and queryStartTime != '' ">
+					AND t2.R_STATTIME &gt;= #{queryStartTime}
+				</if>
+				<if test="queryEndTime != null and queryEndTime != '' ">
+					AND t2.R_STATTIME &lt; #{queryEndTime}
+				</if>
+				<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">
+					AND t2.BIZ_ID  in (${queryBizIdStr}) 
+			</if>
+				<if test="queryDestIp != null and queryDestIp != '' ">  
+					AND LOWER(DEST_IP) LIKE CONCAT('%','${queryDestIp}','%' ) 
+				</if>
+			</trim> 
+			group by t2.DEST_IP, t2.R_STATTIME
+		) t1 group by t1.DEST_IP 
+		<if test=" order != null and order != '' and sort != null and sort != '' ">  
+			order by ${sort} ${order}
+		</if>
+		<if test="isPaging == 1">
+			LIMIT #{startRow}, #{endRow}
+		</if>
+	</select>
+	<select id="getTableColumnsTotalCounts" resultType="java.lang.Integer">
+		select count(1) FROM (SELECT DEST_IP FROM ${queryTableName} t1
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="queryStartTime != null and queryStartTime != '' ">
+				AND R_STATTIME &gt;= #{queryStartTime}
+			</if>
+			<if test="queryEndTime != null and queryEndTime != '' ">
+				AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">
+					AND BIZ_ID  in (${queryBizIdStr}) 
+			</if>
+			<if test="queryDestIp != null and queryDestIp != '' ">  
+				AND LOWER(DEST_IP) LIKE CONCAT('%','${queryDestIp}','%' ) 
+			</if>
+		</trim> 
+		 group by t1.DEST_IP) t2
+	</select>
+	
+	<select id="getTrenTableColumns" resultType ="java.util.HashMap">
+		SELECT t1.R_STATTIME, t1.DEST_IP,
+		IFNULL(sum(t1.CONNECTTIMEOUT_COUNT), 0) as CONNECTTIMEOUT_COUNT, 
+					IFNULL(sum(t1.RESPFAIL_COUNT), 0) as RESPFAIL_COUNT, 
+					IFNULL(sum(t1.CONNECT_COUNT), 0) as CONNECT_COUNT,
+					IFNULL(sum(t1.SUCCESSCONNECT_COUNT), 0) as SUCCESSCONNECT_COUNT,
+					IFNULL(sum(t1.RESPONSE_DELAY), 0) as RESPONSE_DELAY,
+					IFNULL(sum(t1.SERVER_DELAY), 0) as SERVER_DELAY,
+					IFNULL(sum(t1.CLIENT_DELAY), 0) as CLIENT_DELAY,
+					
+					sum(case t1.RESPONSE_DELAY WHEN 0 THEN 0 ELSE 1 end  )as RESPONSE_DELAY_COUNT,
+					sum(case t1.SERVER_DELAY WHEN 0 THEN 0 ELSE 1 end  )as SERVER_DELAY_COUNT,
+					sum(case t1.CLIENT_DELAY WHEN 0 THEN 0 ELSE 1 end  )as CLIENT_DELAY_COUNT,
+					case sum(t1.TCP_CONNECT_COUNT) WHEN 0 THEN 1 ELSE sum(t1.TCP_CONNECT_COUNT)  end as TCP_CONNECT_COUNT,
+				
+					IFNULL(sum(t1.FLOW_UP), 0) as FLOW_UP, IFNULL(sum(t1.FLOW_DN), 0) as FLOW_DN,
+					round( IFNULL(sum(t1.SUCCESSCONNECT_COUNT), 0) *100 / IF(sum(t1.CONNECT_COUNT)=0 || IF(sum(t1.CONNECT_COUNT) is null, true, false), 1, sum(t1.CONNECT_COUNT)), 2) as SUCCESSCONNECT_RATE,
+					round( ( IFNULL(sum(t1.CONNECT_COUNT), 0) - IFNULL(sum(t1.SUCCESSCONNECT_COUNT), 0) )*100/ IF(sum(t1.CONNECT_COUNT)=0 || IF(sum(t1.CONNECT_COUNT) is null, true, false), 1, sum(t1.CONNECT_COUNT)), 2) as FAILCONNECT_RATE,
+					round( IFNULL(sum(t1.CONNECTTIMEOUT_COUNT), 0) *100/ IF(sum(t1.CONNECT_COUNT)=0 || IF(sum(t1.CONNECT_COUNT) is null, true, false), 1, sum(t1.CONNECT_COUNT)), 2) as CONNECTTIMEOUT_RATE,
+					round( IFNULL(sum(t1.RETRANSPACKAGE_UP), 0) *100/ IF(sum(t1.DATAPACKAGE_UP)=0 || IF(sum(t1.DATAPACKAGE_UP) is null, true, false), 1, sum(t1.DATAPACKAGE_UP)), 2) as RETRANSPACKAGE_UP_RATE,
+					round( IFNULL(sum(t1.RETRANSPACKAGE_DN), 0) *100/ IF(sum(t1.DATAPACKAGE_DN)=0 || IF(sum(t1.DATAPACKAGE_DN) is null, true, false), 1, sum(t1.DATAPACKAGE_DN)), 2) as RETRANSPACKAGE_DN_RATE,
+					round( IFNULL(sum(t1.FLOW_UP), 0) / IF(sum(t1.SESSIONTIME)=0 || IF(sum(t1.SESSIONTIME) is null, true, false), 1, sum(t1.SESSIONTIME)), 2) as UP_SESSION_RATE,
+					round( IFNULL(sum(t1.FLOW_DN), 0) / IF(t1.SESSIONTIME=0 || IF(sum(t1.SESSIONTIME) is null, true, false), 1, t1.SESSIONTIME), 2) as DN_SESSION_RATE,
+					round( IFNULL(sum(t1.MIDPACKAGEFLOW_DN), 0) / IF(sum(t1.MIDPACKAGETIME_DN)=0 || IF(sum(t1.MIDPACKAGETIME_DN) is null, true, false), 1, sum(t1.MIDPACKAGETIME_DN)), 2) as MIDPACKAGEFLOW_DN_RATE,
+					round( IFNULL(sum(t1.BIGPACKAGEFLOW_DN), 0) / IF(sum(t1.BIGPACKAGETIME_DN)=0 || IF(sum(t1.BIGPACKAGETIME_DN) is null, true, false), 1, sum(t1.BIGPACKAGETIME_DN)), 2) as BIGPACKAGEFLOW_DN_RATE
+		FROM ${queryTableName} t1
+			<trim prefix="WHERE" prefixOverrides="AND |OR ">
+				<if test="queryStartTime != null and queryStartTime != '' ">
+					AND t1.R_STATTIME &gt;= #{queryStartTime}
+				</if>
+				<if test="queryEndTime != null and queryEndTime != '' ">
+					AND t1.R_STATTIME &lt; #{queryEndTime}
+				</if>
+				<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">
+					AND t1.BIZ_ID  in (${queryBizIdStr}) 
+			</if>
+				<if test="queryDestIp != null and queryDestIp != '' ">  
+					AND LOWER(DEST_IP) LIKE CONCAT('%','${queryDestIp}','%' ) 
+				</if>
+			</trim> 
+		group by t1.R_STATTIME
+		<if test=" order != null and order != '' and sort != null and sort != '' ">  
+			order by ${sort} ${order}
+		</if>
+		<if test="isPaging == 1">
+			LIMIT #{startRow}, #{endRow}
+		</if>
+	</select>
+	<select id="getTrendTableColumnsTotalCounts" resultType="java.lang.Integer">
+		select count(1) FROM (SELECT R_STATTIME FROM ${queryTableName} t1
+			<trim prefix="WHERE" prefixOverrides="AND |OR ">
+				<if test="queryStartTime != null and queryStartTime != '' ">
+					AND R_STATTIME &gt;= #{queryStartTime}
+				</if>
+				<if test="queryEndTime != null and queryEndTime != '' ">
+					AND R_STATTIME &lt; #{queryEndTime}
+				</if>
+				<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">
+					AND BIZ_ID  in (${queryBizIdStr}) 
+			</if>
+				<if test="queryDestIp != null and queryDestIp != '' ">  
+					AND LOWER(DEST_IP) LIKE CONCAT('%','${queryDestIp}','%' ) 
+				</if>
+			</trim> 
+		 group by t1.R_STATTIME) t2
+	</select>
+	<select id="getLayerTrenTableColumns" resultType ="java.util.HashMap">
+		SELECT t1.R_STATTIME, t1.DEST_IP,
+		IFNULL(sum(t1.CONNECTTIMEOUT_COUNT), 0) as CONNECTTIMEOUT_COUNT, 
+					IFNULL(sum(t1.RESPFAIL_COUNT), 0) as RESPFAIL_COUNT, 
+					IFNULL(sum(t1.CONNECT_COUNT), 0) as CONNECT_COUNT,
+					IFNULL(sum(t1.SUCCESSCONNECT_COUNT), 0) as SUCCESSCONNECT_COUNT,
+					IFNULL(sum(t1.RESPONSE_DELAY), 0) as RESPONSE_DELAY,
+					IFNULL(sum(t1.SERVER_DELAY), 0) as SERVER_DELAY,
+					IFNULL(sum(t1.CLIENT_DELAY), 0) as CLIENT_DELAY,
+					
+					sum(case t1.RESPONSE_DELAY WHEN 0 THEN 0 ELSE 1 end  )as RESPONSE_DELAY_COUNT,
+					sum(case t1.SERVER_DELAY WHEN 0 THEN 0 ELSE 1 end  )as SERVER_DELAY_COUNT,
+					sum(case t1.CLIENT_DELAY WHEN 0 THEN 0 ELSE 1 end  )as CLIENT_DELAY_COUNT,
+					case sum(t1.TCP_CONNECT_COUNT) WHEN 0 THEN 1 ELSE sum(t1.TCP_CONNECT_COUNT)  end as TCP_CONNECT_COUNT,
+				
+				
+					IFNULL(sum(t1.FLOW_UP), 0) as FLOW_UP, IFNULL(sum(t1.FLOW_DN), 0) as FLOW_DN,
+					round( IFNULL(sum(t1.SUCCESSCONNECT_COUNT), 0) *100 / IF(sum(t1.CONNECT_COUNT)=0 || IF(sum(t1.CONNECT_COUNT) is null, true, false), 1, sum(t1.CONNECT_COUNT)), 2) as SUCCESSCONNECT_RATE,
+					round( ( IFNULL(sum(t1.CONNECT_COUNT), 0) - IFNULL(sum(t1.SUCCESSCONNECT_COUNT), 0) )*100/ IF(sum(t1.CONNECT_COUNT)=0 || IF(sum(t1.CONNECT_COUNT) is null, true, false), 1, sum(t1.CONNECT_COUNT)), 2) as FAILCONNECT_RATE,
+					round( IFNULL(sum(t1.CONNECTTIMEOUT_COUNT), 0) *100/ IF(sum(t1.CONNECT_COUNT)=0 || IF(sum(t1.CONNECT_COUNT) is null, true, false), 1, sum(t1.CONNECT_COUNT)), 2) as CONNECTTIMEOUT_RATE,
+					round( IFNULL(sum(t1.RETRANSPACKAGE_UP), 0) *100/ IF(sum(t1.DATAPACKAGE_UP)=0 || IF(sum(t1.DATAPACKAGE_UP) is null, true, false), 1, sum(t1.DATAPACKAGE_UP)), 2) as RETRANSPACKAGE_UP_RATE,
+					round( IFNULL(sum(t1.RETRANSPACKAGE_DN), 0) *100/ IF(sum(t1.DATAPACKAGE_DN)=0 || IF(sum(t1.DATAPACKAGE_DN) is null, true, false), 1, sum(t1.DATAPACKAGE_DN)), 2) as RETRANSPACKAGE_DN_RATE,
+					round( IFNULL(sum(t1.FLOW_UP), 0) / IF(sum(t1.SESSIONTIME)=0 || IF(sum(t1.SESSIONTIME) is null, true, false), 1, sum(t1.SESSIONTIME)), 2) as UP_SESSION_RATE,
+					round( IFNULL(sum(t1.FLOW_DN), 0) / IF(t1.SESSIONTIME=0 || IF(sum(t1.SESSIONTIME) is null, true, false), 1, t1.SESSIONTIME), 2) as DN_SESSION_RATE,
+					round( IFNULL(sum(t1.MIDPACKAGEFLOW_DN), 0) / IF(sum(t1.MIDPACKAGETIME_DN)=0 || IF(sum(t1.MIDPACKAGETIME_DN) is null, true, false), 1, sum(t1.MIDPACKAGETIME_DN)), 2) as MIDPACKAGEFLOW_DN_RATE,
+					round( IFNULL(sum(t1.BIGPACKAGEFLOW_DN), 0) / IF(sum(t1.BIGPACKAGETIME_DN)=0 || IF(sum(t1.BIGPACKAGETIME_DN) is null, true, false), 1, sum(t1.BIGPACKAGETIME_DN)), 2) as BIGPACKAGEFLOW_DN_RATE
+		FROM ${queryTableName} t1
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="queryStartTime != null and queryStartTime != '' ">
+				AND t1.R_STATTIME &gt;= #{queryStartTime}
+			</if>
+			<if test="queryEndTime != null and queryEndTime != '' ">
+				AND t1.R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">
+				AND t1.BIZ_ID  in (${queryBizIdStr}) 
+			</if>
+			<if test="queryDestIp != null and queryDestIp != '' ">  
+				AND LOWER(DEST_IP) LIKE CONCAT('%','${queryDestIp}','%' ) 
+			</if>
+		</trim> 
+		group by t1.R_STATTIME
+		<if test=" order != null and order != '' and sort != null and sort != '' ">  
+			order by ${sort} ${order}
+		</if>
+		<if test="isPaging == 1">
+			LIMIT #{startRow}, #{endRow}
+		</if>
+	</select>
+	<select id="getLayerTrendTableColumnsTotalCounts" resultType="java.lang.Integer">
+		select count(1) FROM (SELECT DEST_IP FROM ${queryTableName} t1
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="queryStartTime != null and queryStartTime != '' ">
+				AND t1.R_STATTIME &gt;= #{queryStartTime}
+			</if>
+			<if test="queryEndTime != null and queryEndTime != '' ">
+				AND t1.R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">
+				AND t1.BIZ_ID  in (${queryBizIdStr}) 
+			</if>
+			<if test="queryDestIp != null and queryDestIp != '' ">  
+				AND LOWER(DEST_IP) LIKE CONCAT('%','${queryDestIp}','%' ) 
+			</if>
+		</trim>
+		 group by t1.R_STATTIME) t2
+	</select>
+</mapper>

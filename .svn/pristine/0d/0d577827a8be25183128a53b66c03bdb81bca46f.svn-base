@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aotain.tdc.dao.quality.CallBillDao">
+	<select id="getTableColumns" resultType="java.util.HashMap">
+		select * from ${callbillCatalog}.original_bill
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="queryStartTime!=null and queryStartTime!=''">
+				AND partdate = ${queryStartTime}
+			</if>
+			<if test="queryHour!=null and queryHour!='' ">
+				AND hour = #{queryHour}
+			</if>
+			<if test="querySrcIp != null and querySrcIp !=''">
+				AND (sUSERIPv4 = #{querySrcIp} or sUSERIPv6 = #{querySrcIp})
+			</if>
+			<if test="queryDestIp != null and queryDestIp !=''">
+				AND (sServerIPv4 = #{queryDestIp} or sServerIPv6 = #{queryDestIp})
+			</if>
+			<if test="querySrcPort != null  and querySrcPort > 0 ">
+				AND uiUserPort = ${querySrcPort}
+			</if>
+			<if test="queryDestPort != null and queryDestPort > 0">
+				AND uiServerPort = ${queryDestPort}
+			</if>
+			<if test="queryDomain != null and queryDomain != ''">
+				AND sTopDomainName = #{queryDomain}
+			</if>
+			<if test="queryUrl != null and queryUrl != ''">
+				AND sTopDomainName = #{queryUrl}
+			</if>
+		</trim>
+		<if test="isPaging == 1">
+			order by partdate LIMIT #{endRow} OFFSET #{startRow}
+		</if>
+	</select>
+	<select id="getTableColumnsTotalCounts" resultType="java.lang.Integer">
+		select count(1) FROM ${callbillCatalog}.original_bill
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="queryStartTime!=null and queryStartTime!=''">
+				AND partdate = ${queryStartTime}
+			</if>
+			<if test="queryHour!=null and queryHour!='' ">
+				AND hour = #{queryHour}
+			</if>
+			<if test="querySrcIp != null and querySrcIp !=''">
+				AND (sUSERIPv4 = #{querySrcIp} or sUSERIPv6 = #{querySrcIp})
+			</if>
+			<if test="queryDestIp != null and queryDestIp !=''">
+				AND (sServerIPv4 = #{queryDestIp} or sServerIPv6 = #{queryDestIp})
+			</if>
+			<if test="querySrcPort != null  and querySrcPort > 0 ">
+				AND uiUserPort = ${querySrcPort}
+			</if>
+			<if test="queryDestPort != null and queryDestPort > 0">
+				AND uiServerPort = ${queryDestPort}
+			</if>
+			<if test="queryDomain != null and queryDomain != ''">
+				AND sTopDomainName = #{queryDomain}
+			</if>
+			<if test="queryUrl != null and queryUrl != ''">
+				AND sTopDomainName = #{queryUrl}
+			</if>
+		</trim>
+	</select>
+
+</mapper>

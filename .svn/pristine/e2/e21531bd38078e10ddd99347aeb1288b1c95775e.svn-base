@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aotain.tdc.dao.traffic.BaseResPoolDao" >
+<select id="getTableColumns" resultType ="java.util.HashMap">
+		SELECT  BIZ_ID , 
+		<!-- (SELECT SUM(FLOW_UP)+ SUM(FLOW_DN) FROM ${queryTableName} -->
+		ROUND(IFNULL((SUM(FLOW_UP)+SUM(FLOW_DN))/(SELECT SUM(FLOW_UP)+ SUM(FLOW_DN) FROM ${queryTableName}
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryProvinceId > 0">
+				AND PROVINCE_ID = #{queryProvinceId}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">  
+				AND BIZ_ID in (${queryBizIdStr})
+			</if>
+		</trim>
+		
+		<!-- ) AS FLOW_ALL, -->
+		)*100,0),2) AS FLOW_PRE,
+		<!-- SUM(FLOW_UP) AS FLOW_UP,
+		SUM(FLOW_DN) AS FLOW_DN,
+		(SUM(FLOW_UP)+SUM(FLOW_DN)) as FLOW,
+		SUM(FLOW_UP) AS FLOWUP_RATE,
+		SUM(FLOW_DN) AS FLOWDN_RATE,
+		(SUM(FLOW_UP)+SUM(FLOW_DN)) as FLOW_PRE,
+		(SUM(FLOW_UP)+SUM(FLOW_DN)) as FLOW_RATE, -->
+		ROUND(SUM(FLOW_UP)/1024/1024/1024,2) AS FLOW_UP,
+		ROUND(SUM(FLOW_DN)/1024/1024/1024,2) AS FLOW_DN,
+		ROUND((SUM(FLOW_UP)+SUM(FLOW_DN))/1024/1024/1024,2) AS FLOW,
+		ROUND(SUM(FLOW_UP)/1024/1024*8,2) AS FLOWUP_RATE,
+		ROUND(SUM(FLOW_DN)/1024/1024*8,2) AS FLOWDN_RATE,
+		ROUND((SUM(FLOW_UP)+SUM(FLOW_DN))/1024/1024*8,2) as FLOW_RATE,
+		(select count(DISTINCT R_STATTIME) from ${queryTableName}  T2
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryProvinceId > 0">
+				AND PROVINCE_ID = #{queryProvinceId}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">  
+				AND BIZ_ID in (${queryBizIdStr})
+			</if>
+		</trim>
+		
+		) AS COUNTNUM FROM ${queryTableName}  T1
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryProvinceId > 0">
+				AND PROVINCE_ID = #{queryProvinceId}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">  
+				AND BIZ_ID in (${queryBizIdStr})
+			</if>
+		</trim>
+		GROUP BY BIZ_ID  
+		<if test=" order != null and order != '' and sort != null and sort != '' ">  
+			order by ${sort} ${order}
+		</if>
+		<if test="isPaging == 1">
+			LIMIT #{startRow}, #{endRow}
+		</if>
+	</select>
+	<select id="getTableColumnsTotalCounts" resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM (SELECT BIZ_ID,COUNT(*) AS COUNTNUM FROM ${queryTableName}  
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryProvinceId > 0">
+				AND PROVINCE_ID = #{queryProvinceId}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">  
+				AND BIZ_ID in (${queryBizIdStr})
+			</if>
+		</trim>
+		GROUP BY BIZ_ID) T1
+	</select>
+	<select id="getTimeParticleList" resultType ="java.util.HashMap">
+		SELECT R_STATTIME FROM  ${queryTableName}   
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryProvinceId > 0">
+				AND PROVINCE_ID = #{queryProvinceId}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">  
+				AND BIZ_ID in (${queryBizIdStr})
+			</if>
+		</trim>
+		ORDER BY R_STATTIME ASC
+	</select>
+	<select id="getFlowTrendByIdList" resultType ="java.util.HashMap">
+		SELECT R_STATTIME ,FLOW_UP,FLOW_DN,(FLOW_UP+FLOW_DN) as FLOW FROM  ${queryTableName}   
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND R_STATTIME &gt;= #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCarrierId > 0">
+				AND CARRIER_ID = #{queryCarrierId}
+			</if>
+			<if test="queryProvinceId > 0">
+				AND PROVINCE_ID = #{queryProvinceId}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">  
+				AND BIZ_ID in (${queryBizIdStr})
+			</if>
+		</trim>
+		GROUP BY R_STATTIME
+	</select>
+</mapper>

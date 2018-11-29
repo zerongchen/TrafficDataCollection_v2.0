@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aotain.tdc.dao.traffic.BizTrafficDao">
+	<select id="getStatisticsTableColumns" resultType ="java.util.HashMap">
+		SELECT  t.BIZ_ID, SUM(t.FLOW_UP) AS FLOW_UP,
+		SUM(t.FLOW_DN) AS FLOW_DN,(SUM(t.FLOW_UP)+SUM(t.FLOW_DN)) as FLOW,
+		(select count(DISTINCT t1.R_STATTIME) from ${queryTableName} t1
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+				AND BIZ_ID != 0
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">  
+				AND BIZ_ID in (${queryBizIdStr})
+			</if>
+			AND t1.BIZ_ID = t.BIZ_ID
+		</trim>
+		) AS COUNTNUM,
+		ROUND(IFNULL((SUM(t.FLOW_UP)+ SUM(t.FLOW_DN))/(SELECT (SUM(t2.FLOW_UP)+ SUM(t2.FLOW_DN)) FROM ${queryTableName} t2
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+			AND BIZ_ID != 0
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">  
+				AND BIZ_ID in (${queryBizIdStr})
+			</if>
+		</trim>
+		)*100,0),2) AS FLOW_PRE
+		FROM ${queryTableName} t
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+			AND BIZ_ID != 0
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">  
+				AND BIZ_ID in (${queryBizIdStr})
+			</if>
+		</trim>
+			 GROUP BY BIZ_ID 
+		<if test=" order != null and order != '' and sort != null and sort != '' ">  
+			order by ${sort} ${order}
+		</if>
+		<if test="isPaging == 1">
+			LIMIT #{startRow}, #{endRow}
+		</if>
+	</select>
+	
+	<select id="getStatisticsTableColumnsTotalCounts" resultType="java.lang.Integer">
+	select count(DISTINCT BIZ_ID) AS COUNTNUM FROM ${queryTableName}  
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+			AND BIZ_ID != 0
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">  
+				AND BIZ_ID in (${queryBizIdStr})
+			</if>
+		</trim>
+	</select>
+	
+	<select id="getTableColumns" resultType ="java.util.HashMap">
+	SELECT  R_STATTIME, (SUM(FLOW_UP)+ SUM(FLOW_DN)) AS FLOW_ALL, SUM(FLOW_UP) AS FLOW_UP,
+		SUM(FLOW_DN) AS FLOW_DN,(SUM(FLOW_UP)+SUM(FLOW_DN)) as FLOW,
+		(select count(DISTINCT R_STATTIME) from ${queryTableName}
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+			AND BIZ_ID != 0
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">  
+				AND BIZ_ID in (${queryBizIdStr})
+			</if>
+		</trim>
+		) AS COUNTNUM
+		FROM ${queryTableName}
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+			AND BIZ_ID != 0
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">  
+				AND BIZ_ID in (${queryBizIdStr})
+			</if>
+		</trim>
+			 GROUP BY R_STATTIME
+
+	</select>
+	
+	<select id="getTableColumnsTotalCounts" resultType="java.lang.Integer">
+		select count(DISTINCT R_STATTIME) AS COUNTNUM FROM ${queryTableName}  
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+			AND BIZ_ID != 0
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">  
+				AND BIZ_ID in (${queryBizIdStr})
+			</if>
+		</trim>
+	</select>
+	
+	<select id="getLayerTrenTableColumns" resultType ="java.util.HashMap">
+		SELECT  t.BIZ_ID, (SUM(t.FLOW_UP)+ SUM(t.FLOW_DN)) AS FLOW_ALL, SUM(t.FLOW_UP) AS FLOW_UP, t.R_STATTIME,
+		SUM(t.FLOW_DN) AS FLOW_DN,(SUM(t.FLOW_UP)+SUM(t.FLOW_DN)) as FLOW
+		FROM ${queryTableName} t
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+			AND BIZ_ID != 0
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">  
+				AND BIZ_ID in (${queryBizIdStr})
+			</if>
+		</trim>
+			 GROUP BY R_STATTIME 
+
+	</select>
+	<select id="getLayerTrendTableColumnsTotalCounts" resultType="java.lang.Integer">
+		select count(DISTINCT R_STATTIME) AS COUNTNUM FROM ${queryTableName}  
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1">  
+			AND BIZ_ID != 0
+				AND R_STATTIME &gt; #{queryStartTime} AND R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryBizIdStr != null and queryBizIdStr != '-1' ">  
+				AND BIZ_ID in (${queryBizIdStr})
+			</if>
+		</trim>
+		</select>
+</mapper>
+

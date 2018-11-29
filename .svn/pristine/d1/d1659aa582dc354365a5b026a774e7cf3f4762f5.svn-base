@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aotain.tdc.dao.common.TableColumnDao">
+	<select id="getTableColumns" parameterType="com.aotain.tdc.dto.common.TableParam" resultType="com.aotain.tdc.dto.common.TableColumnDTO">
+		SELECT T.COLUMN_VALUE AS FIELD,T.COLUMN_TEXT AS TITLE,T.COLUMN_TYPE AS COLUMN_TYPE,U.COLUMN_TYPE AS USERCOLUMN_TYPE,T.ORDER_TYPE,SWITCHABLE,COLUMN_ORDER
+ 		FROM DIC_TABLECOLUMN T LEFT JOIN WEB_COLUMNUSER U 
+ 		ON T.DICT_ID = U.DICT_ID
+ 		<if test="operID != null">
+		 	AND U.ADMIN_OPER = #{operID}
+		</if> 
+		WHERE 1=1
+		<if test="tableName != null">
+		 	AND T.TABLE_NAME = #{tableName}
+		</if> 
+		ORDER BY T.COLUMN_ORDER ASC
+	</select> 
+	
+	<select id="getDictId" parameterType="com.aotain.tdc.dto.common.TableParam" resultType="int">
+		SELECT DICT_ID FROM DIC_TABLECOLUMN
+		WHERE 1=1
+ 		<if test="tableName != null">
+		 	AND TABLE_NAME = #{tableName}
+		</if> 
+		<if test="column_value != null">
+		 	AND UPPER(COLUMN_VALUE) = UPPER(#{column_value})
+		</if> 
+	</select> 
+</mapper>

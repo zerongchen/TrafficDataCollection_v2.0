@@ -1,0 +1,785 @@
+package com.aotain.common.cache;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.ibatis.annotations.Param;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import com.aotain.common.util.CommonLog;
+import com.aotain.common.util.StringUtil;
+import com.aotain.tdc.constant.CacheType;
+import com.aotain.tdc.dto.common.DicCarrierBean;
+import com.aotain.tdc.dto.common.DicPageModuleBean;
+import com.aotain.tdc.dto.common.DicPageProductBean;
+import com.aotain.tdc.dto.common.DicProtoCataLogBean;
+import com.aotain.tdc.dto.common.DicProtoClassBean;
+import com.aotain.tdc.dto.common.DicProtoModuleBean;
+import com.aotain.tdc.dto.common.DicProtoPageBean;
+import com.aotain.tdc.dto.common.DicProtoProductBean;
+import com.aotain.tdc.dto.common.DicProtocolBean;
+import com.aotain.tdc.dto.common.DicServerBuildBean;
+import com.aotain.tdc.dto.common.DicServerRoomBean;
+import com.aotain.tdc.dto.common.DicSysPositionBean;
+import com.aotain.tdc.dto.common.PolicyDstIPPortBean;
+import com.aotain.tdc.dto.common.PolicyStrategyFTPBean;
+import com.aotain.tdc.dto.common.SelectorBean;
+import com.aotain.tdc.service.common.CommonService;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
+/**
+ * 公共缓存类（有效时间7天）
+ * <br/>bean cache 一般用于关联字段 
+ * <br/>list cache 一般用于界面查询选项
+ * @author zck
+ *
+ */
+@Component
+public class CommonCache {
+	
+	@Autowired
+	CommonService commonService;
+	
+	private static LoadingCache<Long, DicCarrierBean> dicCarrierBeanCache = null;
+	private static LoadingCache<Long, DicProtoCataLogBean> dicProtoCataLogBeanCache = null;
+	private static LoadingCache<Long, DicProtoClassBean> dicProtoClassBeanCache = null;
+	private static LoadingCache<String, DicProtocolBean> dicProtocolBeanCache = null;
+	private static LoadingCache<Long, DicProtoProductBean> dicProtoProductBeanCache = null;
+	private static LoadingCache<Long, DicServerBuildBean> dicServerBuildBeanCache = null;
+	private static LoadingCache<Long, DicServerRoomBean> dicServerRoomBeanCache = null;
+	private static LoadingCache<Long, DicSysPositionBean> dicSysPositionBeanCache = null;
+	private static LoadingCache<Long, DicProtoModuleBean> dicProtoModuleBeanCache = null;
+	private static LoadingCache<Long, DicProtoPageBean> dicProtoPageBeanCache = null;
+	private static LoadingCache<Long, DicPageProductBean> dicPageProductBeanCache = null;
+	private static LoadingCache<Long, DicPageModuleBean> dicPageModuleBeanCache = null;
+	private static LoadingCache<Long, PolicyDstIPPortBean> policyDstIPPortBeanCache = null;
+	private static LoadingCache<Long, PolicyDstIPPortBean> policyColDstIPPortBeanCache = null;
+	private static LoadingCache<Long, PolicyStrategyFTPBean> policyStrategyFTPBeanCache = null;
+	private static LoadingCache<Long, PolicyStrategyFTPBean> policyColStrategyFTPBeanCache = null;
+	private static LoadingCache<String, PolicyStrategyFTPBean> policyStrategyFTPBeanByIdCache = null;
+	private static LoadingCache<String, PolicyDstIPPortBean> policyDstIPPortBeanByIdTypeCache = null;
+	
+	private static LoadingCache<CacheType, List<SelectorBean>> dicListCache = null;
+	private static LoadingCache<Long, SelectorBean> dicBizCache = null;
+	
+	/**
+	 * 刷新缓存
+	 */
+	public void refreshCache(){
+		for(CacheType c : CacheType.values()){
+			this.getDicArrayListCache().refresh(c);
+		}
+		this.getDicCarrierBeanCache().invalidateAll();
+		this.getDicProtoCataLogBeanCache().invalidateAll();
+		this.getDicProtoClassBeanCache().invalidateAll();
+		this.getDicProtocolBeanCache().invalidateAll();
+		this.getDicProtoModuleBeanCache().invalidateAll();
+		this.getDicProtoPageBeanCache().invalidateAll();
+		this.getDicPageProductBeanCache().invalidateAll();
+		this.getDicPageModuleBeanCache().invalidateAll();
+		this.getDicProtoProductBeanCache().invalidateAll();
+		this.getDicServerBuildBeanCache().invalidateAll();
+		this.getDicServerRoomBeanCache().invalidateAll();
+		this.getDicSysPositionBeanCache().invalidateAll();
+		this.getPolicyStrategyFTPBeanCache().invalidateAll();
+		this.getPolicyDstIPPortBeanCache().invalidateAll();
+		this.getColPolicyDstIPPortBeanCache().invalidateAll();
+		this.getDicSysPositionBeanCache().invalidateAll();
+		this.getColPolicyStrategyFTPBeanByKey().invalidateAll();
+		this.getDicBizInfo().invalidateAll();
+		System.out.println("refresh cache success!");
+	}
+	/**
+	 * 查看缓存统计信息
+	 */
+	public void statCache(){
+		System.out.println("cache stats:");
+        System.out.println(this.getDicArrayListCache().stats().toString());
+        System.out.println(this.getDicCarrierBeanCache().stats());
+        System.out.println(this.getDicProtoCataLogBeanCache().stats());
+        System.out.println(this.getDicProtoClassBeanCache().stats());
+        System.out.println(this.getDicProtocolBeanCache().stats());
+        System.out.println(this.getDicProtoModuleBeanCache().stats());
+        System.out.println(this.getDicProtoPageBeanCache().stats());
+        System.out.println(this.getDicProtoProductBeanCache().stats());
+        System.out.println(this.getDicServerBuildBeanCache().stats());
+        System.out.println(this.getDicServerRoomBeanCache().stats());
+        System.out.println(this.getDicSysPositionBeanCache().stats());
+        System.out.println(this.getDicPageProductBeanCache().stats());
+        System.out.println(this.getDicPageModuleBeanCache().stats());
+	}
+	
+	public LoadingCache<Long, DicCarrierBean> getDicCarrierBeanCache(){
+		if(dicCarrierBeanCache == null){
+			dicCarrierBeanCache = 	CacheBuilder
+					.newBuilder().maximumSize(1000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<Long, DicCarrierBean>() {
+							public DicCarrierBean load(Long carrierId) {
+							DicCarrierBean cacheBean = new DicCarrierBean();
+							SelectorBean selectorbean = commonService.getDicCarrierBeanByKey(carrierId);
+							if(selectorbean == null) 
+								return cacheBean;
+							cacheBean.setCarrierId(selectorbean.getCarrierId());
+							cacheBean.setCarrierName(selectorbean.getCarrierName());
+							cacheBean.setDescInfo(selectorbean.getDescInfo());
+							CommonLog.cacheLog.info("new CacheBean Created!");
+							return cacheBean;
+						}
+					});
+		}
+		return dicCarrierBeanCache;
+	}
+	
+	public LoadingCache<Long, DicPageProductBean> getDicPageProductBeanCache() {
+		if(dicPageProductBeanCache == null){
+			dicPageProductBeanCache = CacheBuilder
+					.newBuilder().maximumSize(1000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<Long, DicPageProductBean>() {
+						public DicPageProductBean load(Long pageProductId) {
+							DicPageProductBean cacheBean = new DicPageProductBean();
+							SelectorBean selectorbean = commonService.getDicPageProductBeanByKey(pageProductId);
+							if(selectorbean == null) 
+								return cacheBean;
+							cacheBean.setPageProductId(selectorbean.getPageProductId());
+							cacheBean.setPageProductName(selectorbean.getPageProductName());
+							CommonLog.cacheLog.info("new CacheBean Created!");
+							return cacheBean;
+						}
+					});
+		}
+		return dicPageProductBeanCache;
+	}
+	public LoadingCache<Long, DicPageModuleBean> getDicPageModuleBeanCache() {
+		if(dicPageModuleBeanCache == null){
+			dicPageModuleBeanCache = CacheBuilder
+					.newBuilder().maximumSize(1000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<Long, DicPageModuleBean>() {
+						public DicPageModuleBean load(Long pageModuleId) {
+							DicPageModuleBean cacheBean = new DicPageModuleBean();
+							SelectorBean selectorbean = commonService.getDicPageModuleBeanByKey(pageModuleId);
+							if(selectorbean == null) 
+								return cacheBean;
+							cacheBean.setPageProductId(selectorbean.getPageProductId());
+							cacheBean.setPageModuleId(selectorbean.getPageModuleId());
+							cacheBean.setPageModuleName(selectorbean.getPageModuleName());
+							CommonLog.cacheLog.info("new CacheBean Created!");
+							return cacheBean;
+						}
+					});
+		}
+		return dicPageModuleBeanCache;
+	}
+	
+	public LoadingCache<Long, DicProtoCataLogBean> getDicProtoCataLogBeanCache() {
+		if(dicProtoCataLogBeanCache == null){
+			dicProtoCataLogBeanCache = CacheBuilder
+					.newBuilder().maximumSize(1000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<Long, DicProtoCataLogBean>() {
+						public DicProtoCataLogBean load(Long cataLogId) {
+							DicProtoCataLogBean cacheBean = new DicProtoCataLogBean();
+							SelectorBean selectorbean = commonService.getDicProtoCataLogBeanByKey(cataLogId);
+							if(selectorbean == null) 
+								return cacheBean;
+							cacheBean.setCataLogId(selectorbean.getCatalogId());
+							cacheBean.setCataName(selectorbean.getCataName());
+							cacheBean.setOrderId(selectorbean.getOrderId());
+							CommonLog.cacheLog.info("new CacheBean Created!");
+							return cacheBean;
+						}
+					});
+		}
+		return dicProtoCataLogBeanCache;
+	}
+	
+	public LoadingCache<Long, DicProtoClassBean> getDicProtoClassBeanCache() {
+		if(dicProtoClassBeanCache == null){
+			dicProtoClassBeanCache = CacheBuilder
+					.newBuilder().maximumSize(1000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<Long, DicProtoClassBean>() {
+						public DicProtoClassBean load(Long classId) {
+							DicProtoClassBean cacheBean = new DicProtoClassBean();
+							SelectorBean selectorbean = commonService.getDicProtoClassBeanByKey(classId);
+							if(selectorbean == null) 
+								return cacheBean;
+							cacheBean.setClassId(selectorbean.getClassId());
+							cacheBean.setClassName(selectorbean.getClassName());
+							cacheBean.setCataLogId(selectorbean.getCatalogId());
+							CommonLog.cacheLog.info("new CacheBean Created!");
+							return cacheBean;
+						}
+					});
+		}
+		return dicProtoClassBeanCache;
+	}
+	
+	public LoadingCache<String, DicProtocolBean> getDicProtocolBeanCache() {
+		if(dicProtocolBeanCache == null){
+			dicProtocolBeanCache = CacheBuilder
+					.newBuilder().maximumSize(1000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<String, DicProtocolBean>() {
+						public DicProtocolBean load(String key) {
+							try{
+								String[] akey = key.split("_");
+								Long protocolId = Long.valueOf(akey[0]);
+								int type = Integer.valueOf(akey[1]);
+								DicProtocolBean cacheBean = new DicProtocolBean();
+								SelectorBean selectorbean = commonService.getDicProtocolBeanByKey(protocolId, type);
+								if(selectorbean == null) 
+									return cacheBean;
+								cacheBean.setProtocolId(selectorbean.getProtocolId());
+								cacheBean.setProtocolName(selectorbean.getProtocolName());
+								cacheBean.setProtocolType(selectorbean.getProtocalType());
+								CommonLog.cacheLog.info("new CacheBean Created!");
+								return cacheBean;
+							}catch(Exception e){
+								return null;
+							}
+						}
+					});
+		}
+		return dicProtocolBeanCache;
+	}
+	
+	public LoadingCache<Long, DicProtoProductBean> getDicProtoProductBeanCache() {
+		if(dicProtoProductBeanCache == null){
+			dicProtoProductBeanCache = CacheBuilder
+					.newBuilder().maximumSize(5000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<Long, DicProtoProductBean>() {
+						public DicProtoProductBean load(Long productId) {
+							DicProtoProductBean cacheBean = new DicProtoProductBean();
+							SelectorBean selectorbean = commonService.getDicProtoProductBeanByKey(productId);
+							if(selectorbean == null) 
+								return cacheBean;
+							cacheBean.setProductId(selectorbean.getProductId());
+							cacheBean.setProductName(selectorbean.getProductName());
+							cacheBean.setClassId(selectorbean.getClassId());
+							cacheBean.setCatalogId(selectorbean.getCatalogId());
+							cacheBean.setServerBuildId(selectorbean.getServerBuildId());
+							cacheBean.setServerRoomId(selectorbean.getServerRoomId());
+							CommonLog.cacheLog.info("new CacheBean Created!");
+							return cacheBean;
+						}
+					});
+		}
+		return dicProtoProductBeanCache;
+	}
+	
+	public LoadingCache<Long, DicServerBuildBean> getDicServerBuildBeanCache() {
+		if(dicServerBuildBeanCache == null){
+			dicServerBuildBeanCache = CacheBuilder
+					.newBuilder().maximumSize(1000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<Long, DicServerBuildBean>() {
+						public DicServerBuildBean load(Long serverBuildId) {
+							DicServerBuildBean cacheBean = new DicServerBuildBean();
+							SelectorBean selectorbean = commonService.getDicServerBuildBeanByKey(serverBuildId);
+							if(selectorbean == null) 
+								return cacheBean;
+							cacheBean.setServerBuildId(selectorbean.getServerBuildId());
+							cacheBean.setServerBuildName(selectorbean.getServerBuildName());
+							CommonLog.cacheLog.info("new CacheBean Created!");
+							return cacheBean;
+						}
+					});
+		}
+		return dicServerBuildBeanCache;
+	}
+	
+	public LoadingCache<Long, DicServerRoomBean> getDicServerRoomBeanCache() {
+		if(dicServerRoomBeanCache == null){
+			dicServerRoomBeanCache = CacheBuilder
+					.newBuilder().maximumSize(1000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<Long, DicServerRoomBean>() {
+						public DicServerRoomBean load(Long serverRoomId) {
+							DicServerRoomBean cacheBean = new DicServerRoomBean();
+							SelectorBean selectorbean = commonService.getDicServerRoomBeanByKey(serverRoomId);
+							if(selectorbean == null) 
+								return cacheBean;
+							cacheBean.setServerRoomId(selectorbean.getServerRoomId());
+							cacheBean.setServerBuildId(selectorbean.getServerBuildId());
+							cacheBean.setServerRoomName(selectorbean.getServerRoomName());
+							cacheBean.setLastUpdateTime(selectorbean.getLastUpdateTime());
+							CommonLog.cacheLog.info("new CacheBean Created!");
+							return cacheBean;
+						}
+					});
+		}
+		return dicServerRoomBeanCache;
+	}
+	
+	public LoadingCache<Long, DicProtoPageBean> getDicProtoPageBeanCache() {
+		if(dicProtoPageBeanCache == null){
+			dicProtoPageBeanCache = CacheBuilder
+					.newBuilder().maximumSize(1000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<Long, DicProtoPageBean>() {
+						public DicProtoPageBean load(Long pageId) {
+							DicProtoPageBean cacheBean = new DicProtoPageBean();
+							SelectorBean selectorbean = commonService.getDicProtoPageBeanByKey(pageId);
+							if(selectorbean == null) 
+								return cacheBean;
+							cacheBean.setPageId(selectorbean.getPageId());
+							cacheBean.setPageName(selectorbean.getPageName());
+							cacheBean.setModuleId(selectorbean.getModuleId());
+							cacheBean.setProductId(selectorbean.getProductId());
+							cacheBean.setClassId(selectorbean.getClassId());
+							cacheBean.setCataLogId(selectorbean.getCatalogId());
+							cacheBean.setPageUrl(selectorbean.getPageUrl());
+							cacheBean.setDescInfo(selectorbean.getDescInfo());
+							CommonLog.cacheLog.info("new CacheBean Created!");
+							return cacheBean;
+						}
+					});
+		}
+		return dicProtoPageBeanCache;
+	}
+	
+	public LoadingCache<Long, DicSysPositionBean> getDicSysPositionBeanCache() {
+		if(dicSysPositionBeanCache == null){
+			dicSysPositionBeanCache = CacheBuilder
+					.newBuilder().maximumSize(1000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<Long, DicSysPositionBean>() {
+						public DicSysPositionBean load(Long positionId) {
+							DicSysPositionBean cacheBean = new DicSysPositionBean();
+							SelectorBean selectorbean = commonService.getDicSysPositionBeanByKey(positionId);
+							if(selectorbean == null) 
+								return cacheBean;
+							cacheBean.setPositionId(selectorbean.getPositionId());
+							cacheBean.setPositionName(selectorbean.getPositionName());
+							cacheBean.setParentId(selectorbean.getParentId());
+							cacheBean.setPositionType(selectorbean.getPositionType());
+							CommonLog.cacheLog.info("new CacheBean Created!");
+							return cacheBean;
+						}
+					});
+		}
+		return dicSysPositionBeanCache;
+	}
+	
+	public LoadingCache<Long, PolicyDstIPPortBean> getPolicyDstIPPortBeanCache() {
+		if(policyDstIPPortBeanCache == null){
+			policyDstIPPortBeanCache = CacheBuilder
+					.newBuilder().maximumSize(1000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<Long, PolicyDstIPPortBean>() {
+						public PolicyDstIPPortBean load(Long strategyId) {
+							PolicyDstIPPortBean cacheBean = new PolicyDstIPPortBean();
+							List<SelectorBean> selectorbeans = commonService.getPolicyDstIPPortBeanByKey(strategyId);
+							for(SelectorBean s: selectorbeans){
+								cacheBean.setDstIp((StringUtil.isEmptyString(cacheBean.getDstIp())?"":cacheBean.getDstIp())+(StringUtil.isEmptyString(cacheBean.getDstIp())?"":";")+s.getIp());
+								cacheBean.setDstPort((StringUtil.isEmptyString(cacheBean.getDstPort())?"":cacheBean.getDstPort())+(StringUtil.isEmptyString(cacheBean.getDstPort())?"":";")+s.getPort());
+							}
+							CommonLog.cacheLog.info("new CacheBean Created!");
+							return cacheBean;
+						}
+					});
+		}
+		return policyDstIPPortBeanCache;
+	}
+	public LoadingCache<String, PolicyDstIPPortBean> getPolicyDstIPPortBeanByIdTypeCache() {
+		if(policyDstIPPortBeanByIdTypeCache == null){
+			policyDstIPPortBeanByIdTypeCache = CacheBuilder
+					.newBuilder().maximumSize(1000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<String, PolicyDstIPPortBean>() {
+						public PolicyDstIPPortBean load(String strategyIdType) {
+							PolicyDstIPPortBean cacheBean = new PolicyDstIPPortBean();
+							List<SelectorBean> selectorbeans = commonService.getPolicyDstIPPortBeanByIdType(Long.parseLong(strategyIdType.split("_")[0]), Long.parseLong(strategyIdType.split("_")[1]));
+							for(SelectorBean s: selectorbeans){
+								cacheBean.setDstIp((StringUtil.isEmptyString(cacheBean.getDstIp())?"":cacheBean.getDstIp())+(StringUtil.isEmptyString(cacheBean.getDstIp())?"":";")+s.getIp());
+								cacheBean.setDstPort((StringUtil.isEmptyString(cacheBean.getDstPort())?"":cacheBean.getDstPort())+(StringUtil.isEmptyString(cacheBean.getDstPort())?"":";")+s.getPort());
+							}
+							CommonLog.cacheLog.info("new CacheBean Created!");
+							return cacheBean;
+						}
+					});
+		}
+		return policyDstIPPortBeanByIdTypeCache;
+	}
+	public LoadingCache<Long, PolicyDstIPPortBean> getColPolicyDstIPPortBeanCache() {
+		if(policyColDstIPPortBeanCache == null){
+			policyColDstIPPortBeanCache = CacheBuilder
+					.newBuilder().maximumSize(1000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<Long, PolicyDstIPPortBean>() {
+						public PolicyDstIPPortBean load(Long strategyId) {
+							PolicyDstIPPortBean cacheBean = new PolicyDstIPPortBean();
+							List<SelectorBean> selectorbeans = commonService.getColPolicyDstIPPortBeanByKey(strategyId);
+							for(SelectorBean s: selectorbeans){
+								cacheBean.setDstIp((StringUtil.isEmptyString(cacheBean.getDstIp())?"":cacheBean.getDstIp())+(StringUtil.isEmptyString(cacheBean.getDstIp())?"":";")+s.getIp());
+								cacheBean.setDstPort((StringUtil.isEmptyString(cacheBean.getDstPort())?"":cacheBean.getDstPort())+(StringUtil.isEmptyString(cacheBean.getDstPort())?"":";")+s.getPort());
+							}
+							CommonLog.cacheLog.info("new CacheBean Created!");
+							return cacheBean;
+						}
+					});
+		}
+		return policyColDstIPPortBeanCache;
+	}
+	
+	public LoadingCache<Long, PolicyStrategyFTPBean> getPolicyStrategyFTPBeanCache() {
+		if(policyStrategyFTPBeanCache == null){
+			policyStrategyFTPBeanCache = CacheBuilder
+					.newBuilder().maximumSize(1000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<Long, PolicyStrategyFTPBean>() {
+						public PolicyStrategyFTPBean load(Long strategyId) {
+							PolicyStrategyFTPBean cacheBean = new PolicyStrategyFTPBean();
+							List<SelectorBean> selectorbeans = commonService.getPolicyStrategyFTPBeanByKey(strategyId);
+							if(selectorbeans == null) 
+								return cacheBean;
+							for(SelectorBean s: selectorbeans){
+								cacheBean.setFtpName((StringUtil.isEmptyString(cacheBean.getFtpName())?"":cacheBean.getFtpName())+(StringUtil.isEmptyString(cacheBean.getFtpName())?"":",")+s.getFtpName());
+								cacheBean.setFtpIds((StringUtil.isEmptyString(cacheBean.getFtpIds())?"":cacheBean.getFtpIds())+(StringUtil.isEmptyString(cacheBean.getFtpIds())?"":",")+s.getFtpId());
+								cacheBean.setIps((StringUtil.isEmptyString(cacheBean.getIps())?"":cacheBean.getIps())+(StringUtil.isEmptyString(cacheBean.getIps())?"":",")+s.getIp());
+							}
+							CommonLog.cacheLog.info("new CacheBean Created!");
+							return cacheBean;
+						}
+					});
+		}
+		return policyStrategyFTPBeanCache;
+	}
+	
+	public LoadingCache<String, PolicyStrategyFTPBean> getPolicyStrategyFTPBeanByIdTypeCache() {
+		if(policyStrategyFTPBeanByIdCache == null){
+			policyStrategyFTPBeanByIdCache = CacheBuilder
+					.newBuilder().maximumSize(1000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<String, PolicyStrategyFTPBean>() {
+						public PolicyStrategyFTPBean load(String strategyIdType) {
+							PolicyStrategyFTPBean cacheBean = new PolicyStrategyFTPBean();
+							List<SelectorBean> selectorbeans = commonService.getPolicyStrategyFTPBeanByIdType(Long.parseLong(strategyIdType.split("_")[0]), Long.parseLong(strategyIdType.split("_")[1]));
+							if(selectorbeans == null) 
+								return cacheBean;
+							for(SelectorBean s: selectorbeans){
+								cacheBean.setFtpName((StringUtil.isEmptyString(cacheBean.getFtpName())?"":cacheBean.getFtpName())+(StringUtil.isEmptyString(cacheBean.getFtpName())?"":",")+s.getFtpName());
+								cacheBean.setFtpIds((StringUtil.isEmptyString(cacheBean.getFtpIds())?"":cacheBean.getFtpIds())+(StringUtil.isEmptyString(cacheBean.getFtpIds())?"":",")+s.getFtpId());
+								cacheBean.setIps((StringUtil.isEmptyString(cacheBean.getIps())?"":cacheBean.getIps())+(StringUtil.isEmptyString(cacheBean.getIps())?"":",")+s.getIp());
+							}
+							CommonLog.cacheLog.info("new CacheBean Created!");
+							return cacheBean;
+						}
+					});
+		}
+		return policyStrategyFTPBeanByIdCache;
+	}
+	
+	public LoadingCache<Long, PolicyStrategyFTPBean> getColPolicyStrategyFTPBeanByKey() {
+		if(policyColStrategyFTPBeanCache == null){
+			policyColStrategyFTPBeanCache = CacheBuilder
+					.newBuilder().maximumSize(1000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<Long, PolicyStrategyFTPBean>() {
+						public PolicyStrategyFTPBean load(Long strategyId) {
+							PolicyStrategyFTPBean cacheBean = new PolicyStrategyFTPBean();
+							List<SelectorBean> selectorbeans = commonService.getColPolicyStrategyFTPBeanByKey(strategyId);
+							if(selectorbeans == null) 
+								return cacheBean;
+							for(SelectorBean s: selectorbeans){
+								cacheBean.setFtpName((StringUtil.isEmptyString(cacheBean.getFtpName())?"":cacheBean.getFtpName())+(StringUtil.isEmptyString(cacheBean.getFtpName())?"":",")+s.getFtpName());
+								cacheBean.setFtpIds((StringUtil.isEmptyString(cacheBean.getFtpIds())?"":cacheBean.getFtpIds())+(StringUtil.isEmptyString(cacheBean.getFtpIds())?"":",")+s.getFtpId());
+								cacheBean.setIps((StringUtil.isEmptyString(cacheBean.getIps())?"":cacheBean.getIps())+(StringUtil.isEmptyString(cacheBean.getIps())?"":",")+s.getIp());
+							}
+							CommonLog.cacheLog.info("new CacheBean Created!");
+							return cacheBean;
+						}
+					});
+		}
+		return policyColStrategyFTPBeanCache;
+	}
+	
+	public LoadingCache<Long, DicProtoModuleBean> getDicProtoModuleBeanCache() {
+		if(dicProtoModuleBeanCache == null){
+			dicProtoModuleBeanCache = CacheBuilder
+					.newBuilder().maximumSize(10000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<Long, DicProtoModuleBean>() {
+						public DicProtoModuleBean load(Long moduleId) {
+							DicProtoModuleBean cacheBean = new DicProtoModuleBean();
+							SelectorBean selectorbean = commonService.getDicProtoModuleBeanByKey(moduleId);
+							if(selectorbean == null) 
+								return cacheBean;
+							cacheBean.setModuleId(selectorbean.getModuleId());
+							cacheBean.setModuleName(selectorbean.getModuleName());
+							cacheBean.setProductId(selectorbean.getProductId());
+							cacheBean.setClassId(selectorbean.getClassId());
+							cacheBean.setCataLogId(selectorbean.getCatalogId());
+							cacheBean.setDescInfo(selectorbean.getDescInfo());
+							CommonLog.cacheLog.info("new CacheBean Created!");
+							return cacheBean;
+						}
+					});
+		}
+		return dicProtoModuleBeanCache;
+	}
+	
+	/**
+	 * 集合缓存，一般用于界面的查询选项
+	 * @return List<SelectorBean>
+	 */
+	public LoadingCache<CacheType, List<SelectorBean>> getDicArrayListCache() {
+		if(dicListCache == null){
+			dicListCache = CacheBuilder
+					.newBuilder().maximumSize(50000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<CacheType, List<SelectorBean>>() {
+						public List<SelectorBean> load(CacheType ct) {
+							List<SelectorBean> cacheBean;
+							switch(ct){
+							case SYSPOSITION:
+								cacheBean = commonService.selectSysPosition();
+								break;
+							case CARRIER:
+								cacheBean = commonService.selectCarrier();
+								break;
+//							case DESTIP:
+//								cacheBean = commonService.selectDestIp();
+//								break;
+							case IPMAPPING_RELATED:
+								cacheBean = commonService.selectRelatedIpMapping();
+								break;
+							case KPICONFIG:
+								cacheBean = commonService.selectKPIConfig();
+								break;
+							case CATALOG:
+								cacheBean = commonService.selectCatalog();
+								break;
+							case CLASS:
+								cacheBean = commonService.selectClass(0);
+								break;
+							case PRODUCT:
+								cacheBean = commonService.selectProduct(0,0);
+								break;
+							case MODULE:
+								cacheBean = commonService.selectModule(0,0,0);
+								break;
+							case BUILDIND:
+								cacheBean = commonService.selectBuilding();
+								break;
+							case ROOM:
+								cacheBean = commonService.selectRoom();
+								break;
+							default:
+								cacheBean = new ArrayList<SelectorBean>();
+								break;
+							}
+							CommonLog.cacheLog.info("new List Cache Created!");
+							return cacheBean;
+						}
+					});
+		}
+		return dicListCache;
+	}
+	
+	public LoadingCache<Long, SelectorBean> getDicBizInfo() {
+		if(dicBizCache == null){
+			dicBizCache = CacheBuilder
+					.newBuilder().maximumSize(50000)
+					.expireAfterWrite(24, TimeUnit.HOURS).recordStats()
+					.removalListener(new RemovalListener<Object, Object>() {
+						@Override
+						public void onRemoval(RemovalNotification<Object, Object> notification) {
+							CommonLog.cacheLog.info(notification.getKey() + " was removed, cause is " + notification.getCause());
+						}
+					}).build(new CacheLoader<Long, SelectorBean>() {
+						public SelectorBean load(Long bizId) {
+							SelectorBean cacheBean;
+							if(bizId == 0 ){
+								cacheBean = new SelectorBean();
+								cacheBean.setBizId(0L);
+								cacheBean.setBizName("业务总览");
+								cacheBean.setParentId(-1L);
+								cacheBean.setServerBuildId(-1L);
+								cacheBean.setServerRoomId(-1L);
+								cacheBean.setDeleteFlag(0);
+								cacheBean.setOrderId(0);
+							}else{
+								cacheBean = commonService.selectDicBizInfo(bizId);
+								if(cacheBean.getParentId() ==0 ){
+									cacheBean = new SelectorBean();
+									//cacheBean.setBizId(0L);
+									cacheBean.setBizName("基地资源池业务总览  ");
+									cacheBean.setParentId(-1L);
+									cacheBean.setServerBuildId(-1L);
+									cacheBean.setServerRoomId(-1L);
+									cacheBean.setDeleteFlag(0);
+									cacheBean.setOrderId(0);
+								}
+								if(cacheBean == null){
+									cacheBean = new SelectorBean();
+								}
+							}
+							CommonLog.cacheLog.info("new dicBiz Cache Created!");
+							return cacheBean;
+						}
+					});
+		}
+		return dicBizCache;
+	}
+	
+	public Long getIdByName(CacheType type, String name, Long parentId) throws ExecutionException{
+		List<SelectorBean> list = this.getDicArrayListCache().get(type);
+	    for(SelectorBean bean : list){
+			switch(type){
+			case SYSPOSITION:
+				if(bean.getPositionName().equalsIgnoreCase(name)){
+					return bean.getPositionId();
+				}
+				break;
+			case CARRIER:
+				if(bean.getCarrierName().equalsIgnoreCase(name)){
+					return bean.getCarrierId();
+				}
+				break;
+			case CATALOG:
+				if(bean.getCataName().equalsIgnoreCase(name)){
+					return bean.getCatalogId();
+				}
+				break;
+			case CLASS:
+				if(bean.getClassName().equalsIgnoreCase(name) && bean.getCatalogId().equals(parentId)){
+					return bean.getClassId();
+				}
+				break;
+			case BUILDIND:
+				if(bean.getServerBuildName().equalsIgnoreCase(name)){
+					return bean.getServerBuildId();
+				}
+				break;
+			case ROOM:
+				if(bean.getServerRoomName().equalsIgnoreCase(name) && bean.getServerBuildId().equals(parentId)){
+					return bean.getServerRoomId();
+				}
+				break;
+			case MODULE:
+				if(bean.getModuleName().equalsIgnoreCase(name) && bean.getProductId().equals(parentId)){
+					return bean.getModuleId();
+				}
+				break;
+			default:
+				return null;
+			}
+	    }
+	    return null;
+	}
+	public Long getProductIdByName(String name, Long parentId, Long serverBuildId, Long serverRoomId) throws ExecutionException{
+		List<SelectorBean> list = this.getDicArrayListCache().get(CacheType.PRODUCT);
+	    for(SelectorBean bean : list){
+	    	if( bean.getProductName().equalsIgnoreCase(name) && bean.getClassId().equals(parentId) && bean.getServerBuildId().equals(serverBuildId) && bean.getServerRoomId().equals(serverRoomId) ){
+				return bean.getProductId();
+			}
+	    }
+	    return null;
+	}
+}

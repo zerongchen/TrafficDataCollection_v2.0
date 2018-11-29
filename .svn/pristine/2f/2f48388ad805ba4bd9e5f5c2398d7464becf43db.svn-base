@@ -1,0 +1,44 @@
+# Global logging configuration
+log4j.rootLogger=debug, stdout
+log4j.logger.jspLog=info,sys    
+log4j.logger.threadLog=info,sys
+log4j.logger.dbLog=info,dbout
+log4j.logger.opLog=info,opout
+log4j.logger.threadLog=info,threadout
+log4j.logger.cacheLog=info,cacheout
+
+# SqlMap logging configuration
+log4j.logger.com.ibatis=debug 
+log4j.logger.com.ibatis.common.jdbc.SimpleDataSource=debug 
+log4j.logger.com.ibatis.common.jdbc.ScriptRunner=debug 
+log4j.logger.com.ibatis.sqlmap.engine.impl.SqlMapClientDelegate=debug 
+log4j.logger.java.sql.Connection=debug  
+log4j.logger.java.sql.Statement=debug 
+log4j.logger.java.sql.PreparedStatement=debug 
+log4j.logger.java.sql.ResultSet=debug
+
+# Console output
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.Target=System.out
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+log4j.appender.stdout.layout.ConversionPattern=%d [%t] %-5p %c - %m%n
+# db output
+log4j.appender.dbout=org.apache.log4j.DailyRollingFileAppender
+log4j.appender.dbout.File=log/dbLog.txt
+log4j.appender.dbout.layout=org.apache.log4j.PatternLayout
+log4j.appender.dbout.layout.ConversionPattern=%d [%t] %-5p %c - %m%n
+# general operate output
+log4j.appender.opout=org.apache.log4j.DailyRollingFileAppender
+log4j.appender.opout.File=log/jspLog.txt
+log4j.appender.opout.layout=org.apache.log4j.PatternLayout
+log4j.appender.opout.layout.ConversionPattern=%d [%t] %-5p %c - %m%n
+# thread output
+log4j.appender.threadout=org.apache.log4j.DailyRollingFileAppender
+log4j.appender.threadout.File=log/threadLog.txt
+log4j.appender.threadout.layout=org.apache.log4j.PatternLayout
+log4j.appender.threadout.layout.ConversionPattern=%d [%t] %-5p %c - %m%n
+# cache output
+log4j.appender.cacheout=org.apache.log4j.DailyRollingFileAppender
+log4j.appender.cacheout.File=log/cacheLog.txt
+log4j.appender.cacheout.layout=org.apache.log4j.PatternLayout
+log4j.appender.cacheout.layout.ConversionPattern=%d [%t] %-5p %c - %m%n

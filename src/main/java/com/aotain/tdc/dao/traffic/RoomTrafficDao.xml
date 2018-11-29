@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aotain.tdc.dao.traffic.RoomTrafficDao">
+	<select id="getTrendTableDatas" resultType="java.util.HashMap">
+		SELECT t1.R_STATTIME, 
+			t1.SERVERBUILD_ID, 
+			t1.SERVERROOM_ID,
+			sum(t1.FLOW_UP) as FLOW_UP,
+		 sum(t1.FLOW_DN) as FLOW_DN,
+		 sum(t1.FLOW_UP+t1.FLOW_DN) as FLOW_TOTAL
+		FROM ${queryTableName} t1
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="queryStartTime != null and queryStartTime != '' ">
+				AND t1.R_STATTIME > #{queryStartTime}
+			</if>
+			<if test="queryEndTime != null and queryEndTime != '' ">
+				AND t1.R_STATTIME &lt; #{queryEndTime}
+			</if>
+			<if test="queryCarrier != null and queryCarrier >= 0">
+				AND t1.CARRIER_ID = #{queryCarrier}
+			</if>
+			<if test="queryPosition != null and queryPosition != '' ">  
+				AND t1.PROVINCE_ID in (${queryPosition})
+			</if>
+			<if test="queryServerBuildId != null and queryServerBuildId >= 0 ">  
+				AND t1.SERVERBUILD_ID = #{queryServerBuildId}
+			</if>
+			<if test="queryServerRoomId != null and queryServerRoomId >= 0 ">  
+				AND t1.SERVERROOM_ID = #{queryServerRoomId}
+			</if>
+		</trim> 
+		group by t1.R_STATTIME
+	</select>
+	
+	<select id="getTrendTableDatasTotalCounts" resultType="java.lang.Integer">
+		SELECT count(1) from (
+			SELECT  t1.R_STATTIME ,COUNT(*) AS COUNTNUM  
+			FROM ${queryTableName} t1
+			<trim prefix="WHERE" prefixOverrides="AND |OR ">
+				<if test="queryStartTime != null and queryStartTime != '' ">
+					AND t1.R_STATTIME > #{queryStartTime}
+				</if>
+				<if test="queryEndTime != null and queryEndTime != '' ">
+					AND t1.R_STATTIME &lt; #{queryEndTime}
+				</if>
+				<!--  <if test="queryCarrier != null and queryCarrier >= 0">
+					AND t1.CARRIER_ID = #{queryCarrier}
+				</if>--> 
+				<if test="queryPosition != null and queryPosition != '' ">  
+					AND t1.PROVINCE_ID in (${queryPosition})
+				</if>
+				<if test="queryServerBuildId != null and queryServerBuildId >= 0 ">  
+					AND t1.SERVERBUILD_ID = #{queryServerBuildId}
+				</if>
+				<if test="queryServerRoomId != null and queryServerRoomId >= 0 ">  
+					AND t1.SERVERROOM_ID = #{queryServerRoomId}
+				</if>
+			</trim> 
+			
+                     group by  t1.R_STATTIME
+                
+                 ) t2
+	</select>
+	
+	<select id="getStatisticTableDatas" resultType="java.util.HashMap">
+		SELECT 
+			t1.SERVERBUILD_ID, 
+			t1.SERVERROOM_ID, 
+			count(t1.R_STATTIME) as COUNTNUM,
+			sum(IFNULL(t1.FLOW_UP, 0)) as FLOW_UP, 
+			sum(IFNULL(t1.FLOW_DN,0)) as FLOW_DN, 
+			( sum(IFNULL(t1.FLOW_UP,0))+sum(IFNULL(t1.FLOW_DN,0)) ) as FLOW_TOTAL, 
+			sum(IFNULL(t1.FLOW_UP, 0)) as FLOW_UP_RATE, 
+			sum(IFNULL(t1.FLOW_DN,0)) as FLOW_DN_RATE, 
+			( sum(IFNULL(t1.FLOW_UP,0))+sum(IFNULL(t1.FLOW_DN,0)) ) as FLOW_TOTAL_RATE 
+		FROM (
+			SELECT 
+				t2.SERVERBUILD_ID, 
+				t2.SERVERROOM_ID, 
+				t2.R_STATTIME,
+				sum(IFNULL(t2.FLOW_UP, 0)) as FLOW_UP, 
+				sum(IFNULL(t2.FLOW_DN,0)) as FLOW_DN
+			FROM ${queryTableName} t2
+			<trim prefix="WHERE" prefixOverrides="AND |OR ">
+				<if test="queryStartTime != null and queryStartTime != '' ">
+					AND t2.R_STATTIME > #{queryStartTime}
+				</if>
+				<if test="queryEndTime != null and queryEndTime != '' ">
+					AND t2.R_STATTIME &lt; #{queryEndTime}
+				</if>
+				<if test="queryCarrier != null and queryCarrier >= 0">
+					AND t2.CARRIER_ID = #{queryCarrier}
+				</if>
+				<if test="queryPosition != null and queryPosition != '' ">  
+					AND t2.PROVINCE_ID in (${queryPosition})
+				</if>
+				<if test="queryServerBuildId != null and queryServerBuildId >= 0 ">  
+					AND t2.SERVERBUILD_ID = #{queryServerBuildId}
+				</if>
+				<if test="queryServerRoomId != null and queryServerRoomId >= 0 ">  
+					AND t2.SERVERROOM_ID = #{queryServerRoomId}
+				</if>
+				
+			</trim>
+			 <choose>
+                <when test="queryServerBuildId != null and queryServerBuildId >= 0 ">
+                       group by  t2.SERVERBUILD_ID,  t2.SERVERROOM_ID
+                </when>
+                <otherwise>
+                     group by  t2.SERVERBUILD_ID
+                 </otherwise>
+			</choose>
+			) t1
+			
+			<choose>
+                <when test="queryServerBuildId != null and queryServerBuildId >= 0 ">
+                       group by  t1.SERVERBUILD_ID,  t1.SERVERROOM_ID
+                </when>
+                <otherwise>
+                     group by  t1.SERVERBUILD_ID
+                 </otherwise>
+		</choose>
+		<if test=" order != null and order != '' and sort != null and sort != '' ">  
+			ORDER BY ${sort} ${order}
+		</if>
+	</select>
+	
+	<select id="getStatisticTableDatasTotalCounts" resultType="java.lang.Integer">
+		SELECT count(1) from (
+			SELECT COUNT(*) AS COUNTNUM  
+			FROM ${queryTableName} t1
+			<trim prefix="WHERE" prefixOverrides="AND |OR ">
+				<if test="queryStartTime != null and queryStartTime != '' ">
+					AND t1.R_STATTIME > #{queryStartTime}
+				</if>
+				<if test="queryEndTime != null and queryEndTime != '' ">
+					AND t1.R_STATTIME &lt; #{queryEndTime}
+				</if>
+				<if test="queryCarrier != null and queryCarrier >= 0">
+					AND t1.CARRIER_ID = #{queryCarrier}
+				</if>
+				<if test="queryPosition != null and queryPosition != '' ">  
+					AND t1.PROVINCE_ID in (${queryPosition})
+				</if>
+				<if test="queryServerBuildId != null and queryServerBuildId >= 0 ">  
+					AND t1.SERVERBUILD_ID = #{queryServerBuildId}
+				</if>
+				<if test="queryServerRoomId != null and queryServerRoomId >= 0 ">  
+					AND t1.SERVERROOM_ID = #{queryServerRoomId}
+				</if>
+			</trim> 
+			<choose>
+                <when test="queryServerBuildId != null and queryServerBuildId >= 0 ">
+                       group by  t1.SERVERBUILD_ID,  t1.SERVERROOM_ID
+                </when>
+                <otherwise>
+                     group by  t1.SERVERBUILD_ID
+                 </otherwise>
+                 </choose>
+		) t2
+	</select>
+</mapper>
+

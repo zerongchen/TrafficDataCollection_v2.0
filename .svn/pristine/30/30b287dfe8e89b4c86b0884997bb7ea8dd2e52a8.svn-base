@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aotain.tdc.dao.syslog.OperateLogDao" >
+<select id="getTableColumns" resultType ="java.util.HashMap">
+		SELECT
+		DATE_FORMAT(t1.OPERATE_TIME,'%Y-%m-%d %H:%i:%s') as OPERATE_TIME,
+		t1.OPERATE_MODULE,
+		t1.USERNAME, t1.REAL_NAME, t1.IP_ADDRESS_PORT, t1.SERVER_NAME,
+		CASE t1.OPERATETYPE
+		WHEN 1 THEN '添加'
+		WHEN 2 THEN '修改'
+		WHEN 3 THEN '删除'
+		END
+		AS OPERATETYPE
+		FROM WEB_LOG_OPERATE t1
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1 and queryStartTime != null and queryStartTime !='' and queryEndTime != null and queryEndTime !='' ">
+				AND t1.OPERATE_TIME &gt; #{queryStartTime} AND t1.OPERATE_TIME &lt;= #{queryEndTime}
+			</if>
+			<if test="queryOperateType > 0">
+				AND t1.OPERATETYPE = #{queryOperateType}
+			</if>
+			<if test="queryOperateModule > 0">
+				AND t1.OPERATE_MODULE = #{queryOperateModule}
+			</if>
+			<if test="queryUserName != null and queryUserName != ''">
+				AND t1.USERNAME LIKE CONCAT('%',#{queryUserName},'%')
+			</if>
+		</trim>
+		<if test=" order != null and order != '' and sort != null and sort != '' ">
+			order by ${sort} ${order}
+		</if>
+		<if test="isPaging == 1 and endRow != 0" >
+			LIMIT #{startRow}, #{endRow}
+		</if>
+</select>
+
+<select id="getTableColumnsTotalCounts" resultType="java.lang.Integer">
+	SELECT COUNT(1) FROM WEB_LOG_OPERATE t1
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="isQueryDateTime == 1  and queryStartTime != null and queryStartTime !='' and queryEndTime != null and queryEndTime !='' ">
+				AND t1.OPERATE_TIME &gt; #{queryStartTime} AND t1.OPERATE_TIME &lt;= #{queryEndTime}
+			</if>
+			<if test="queryOperateType > 0">
+				AND t1.OPERATETYPE = #{queryOperateType}
+			</if>
+			<if test="queryOperateModule > 0">
+				AND t1.OPERATE_MODULE = #{queryOperateModule}
+			</if>
+			<if test="queryUserName != null and queryUserName != ''">
+				AND t1.USERNAME LIKE CONCAT('%',#{queryUserName},'%')
+			</if>
+		</trim>
+</select>
+
+<insert id="insertOperateLog" parameterType="com.aotain.tdc.dto.common.LogDTO">
+	INSERT INTO WEB_LOG_OPERATE
+	(
+	OPERATE_TIME,
+	OPERATE_MODULE,
+	USERNAME,
+	REAL_NAME,
+	IP_ADDRESS_PORT,
+	SERVER_NAME,
+	OPERATETYPE
+	)
+	values
+	(
+	#{actionTime},
+	#{operateModule},
+	#{userName},
+	#{realName},
+	#{ipAddressPort},
+	#{serverName},
+	#{actionType}
+	)
+</insert>
+</mapper>

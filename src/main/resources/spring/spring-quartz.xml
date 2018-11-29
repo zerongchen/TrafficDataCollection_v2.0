@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd"
+ 	default-lazy-init="false"> 
+
+	<bean name="scheduler" lazy-init="false" autowire="no" class="org.springframework.scheduling.quartz.SchedulerFactoryBean" >
+		<!-- <property name="dataSource" ref ="dataSource" />
+		<property name="startupDelay" value="30" />
+		<property name="autoStartup" value="true" />
+		<property name="overwriteExistingJobs" value="true" /> -->
+		<property name="configLocation" value="classpath:config/quartz.properties"/> 
+		<property name="applicationContextSchedulerContextKey" value="applicationContextKey"/>
+	</bean>
+	
+	<bean id="quartzJobSchedulerListener" class="com.aotain.tdc.quartz.QuartzJobSchedulerListener"/>
+	
+
+</beans>
